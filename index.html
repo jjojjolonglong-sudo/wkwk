@@ -16,7 +16,7 @@
 <style>
 /* 콘셉트: 인쇄소 교정쇄. 원고지 격자 위의 종이, 재단선, 도장, 영수증 */
 :root{
-  --ink:#1B1B2F; --paper:#FCFDFE; --bg:#E3ECF2; --grid:#C3D8E5; --slip:#FFFBD6;
+  --ink:#333B4F; --paper:#FFFFFF; --bg:#EBF1F6; --grid:#D6E4ED; --slip:#FFFBD6;
   --cy:#14B4DA; --mg:#E6338A; --ye:#FFE600; --mute:#5b6672;
 }
 [hidden]{display:none!important}
@@ -34,23 +34,24 @@ body{
 
 /* 머리글 */
 .top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.logo{margin:0;font-family:'Courier New',monospace;font-size:26px;font-weight:900;letter-spacing:-.02em;background:var(--ye);border:2px solid var(--ink);padding:0 8px;box-shadow:3px 3px 0 var(--ink)}
+.logo{margin:0;font-family:'Courier New',monospace;font-size:22px;font-weight:800;letter-spacing:-.02em;background:var(--ye);border:1.5px solid var(--ink);padding:0 8px;border-radius:3px}
 .sub{font-weight:700;font-size:13px;flex:1}
 
 /* 색인 탭 */
 .tabs{display:flex;gap:4px;padding-left:8px;margin-bottom:-2px;position:relative;z-index:2}
-.tab{font:inherit;font-weight:800;padding:6px 12px 5px;margin-top:8px;border:2px solid var(--ink);border-bottom:0;background:#CFE0EA;color:var(--ink);cursor:pointer}
+.tab{font:inherit;font-weight:700;border-radius:5px 5px 0 0;padding:6px 12px 5px;margin-top:8px;border:1.5px solid var(--ink);border-bottom:0;background:#CFE0EA;color:var(--ink);cursor:pointer}
 .tab[aria-selected=true]{background:var(--ye);margin-top:0;padding-top:12px}
-.sheet{position:relative;z-index:1;background:var(--paper);border:2px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:18px 10px 22px;min-height:340px}
+.sheet{position:relative;z-index:1;background:var(--paper);border:1.5px solid var(--ink);box-shadow:0 2px 10px rgba(40,55,80,.14);border-radius:0 4px 4px 4px;padding:18px 10px 22px;min-height:340px}
 
 /* 버튼·입력 */
 button{font:inherit;color:inherit}
-.btn{font-weight:800;border:2px solid var(--ink);background:#fff;padding:6px 12px;box-shadow:2px 2px 0 var(--ink);cursor:pointer}
-.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn{font-weight:700;border:1.5px solid var(--ink);border-radius:4px;background:#fff;padding:6px 12px;cursor:pointer}
+.btn:hover:not(:disabled){background:#F1F5F8}.btn.pri:hover:not(:disabled){background:#F2D800}
+.btn:disabled{opacity:.45;cursor:not-allowed}
 .btn.pri{background:var(--ye)} .btn.dng{background:var(--mg);color:#fff} .btn.sm{padding:2px 8px;font-size:13px}
 .btn:focus-visible,.tab:focus-visible,.chip:focus-visible,.card:focus-visible,.irow:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--cy);outline-offset:2px}
-label{display:block;font-weight:800;font-size:13px;margin-top:10px}
-input,select{display:block;width:100%;font:inherit;font-weight:400;border:2px solid var(--ink);background:#fff;color:var(--ink);padding:7px 8px;margin-top:3px;border-radius:0}
+label{display:block;font-weight:700;font-size:13px;margin-top:10px}
+input,select{display:block;width:100%;font:inherit;font-weight:400;border:1.5px solid var(--ink);background:#fff;color:var(--ink);padding:7px 8px;margin-top:3px;border-radius:4px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .hint{font-size:12px;color:var(--mute);margin:6px 0 0}
@@ -58,15 +59,13 @@ input,select{display:block;width:100%;font:inherit;font-weight:400;border:2px so
 .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 8px 18px}
 
 /* 도장 */
-.stamp{display:inline-block;border:2px solid var(--c);color:var(--c);font-weight:900;font-size:13px;letter-spacing:.08em;padding:0 7px;border-radius:3px;transform:rotate(-3deg);background:#fff}
+.stamp{display:inline-block;border:1.5px solid var(--c);color:var(--c);font-weight:800;font-size:12px;letter-spacing:.04em;padding:0 8px;border-radius:3px;background:#fff}
 .stamp.pub{background:var(--ye);border-color:var(--ink);color:var(--ink)}
 
 /* 작품 카드: 모서리에 재단선 */
-.card{position:relative;display:grid;grid-template-columns:64px 1fr;gap:12px;margin:0 10px 22px;padding:10px;border:2px solid var(--ink);background:#fff;cursor:pointer}
-.card::before,.card::after{content:"";position:absolute;width:9px;height:9px}
-.card::before{left:-12px;top:-12px;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)}
-.card::after{right:-12px;bottom:-12px;border-left:1.5px solid var(--ink);border-top:1.5px solid var(--ink)}
-.cv{position:relative;width:64px;height:88px;border:2px solid var(--ink);background:#EAF2F7;overflow:hidden;display:grid;place-items:center;color:#9fb6c4;font-weight:900;font-size:22px}
+.card{position:relative;display:grid;grid-template-columns:64px 1fr;gap:12px;margin:0 6px 12px;padding:10px;border:1.5px solid var(--ink);border-radius:4px;background:#fff;cursor:pointer}
+.card:hover{background:#F7FAFC}
+.cv{position:relative;width:64px;height:88px;border:1.5px solid var(--ink);border-radius:3px;background:#EAF2F7;overflow:hidden;display:grid;place-items:center;color:#9fb6c4;font-weight:900;font-size:22px}
 .cv::before{content:"+"}
 .cv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
 .cv.big{width:84px;height:116px;flex:none}
@@ -79,19 +78,19 @@ input,select{display:block;width:100%;font:inherit;font-weight:400;border:2px so
 
 /* 메인: 선택 칩 + 영수증 */
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 8px}
-.chip{font-weight:800;border:2px solid var(--ink);background:#fff;padding:5px 12px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
-.chip[aria-pressed=true]{background:var(--ink);color:#fff;box-shadow:none;transform:translate(2px,2px)}
-.slip{margin:22px 8px 6px;padding:18px 14px 14px;border:2px solid var(--ink);background:var(--slip);text-align:center}
-.slip .l1{font-weight:800;font-size:13px;padding-bottom:10px;border-bottom:2px dashed var(--ink);overflow-wrap:anywhere}
+.chip{font-weight:700;border:1.5px solid var(--ink);border-radius:4px;background:#fff;padding:5px 12px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);color:#fff}
+.slip{margin:22px 8px 6px;padding:18px 14px 14px;border:1.5px solid var(--ink);border-radius:4px;background:var(--slip);text-align:center}
+.slip .l1{font-weight:800;font-size:13px;padding-bottom:10px;border-bottom:1.5px dashed var(--ink);overflow-wrap:anywhere}
 .slip .amt{font-size:clamp(26px,9vw,40px);font-weight:900;padding:14px 0 8px;overflow-wrap:anywhere}
-.slip .l3{font-size:12px;color:var(--mute);border-top:2px dashed var(--ink);padding-top:8px}
+.slip .l3{font-size:12px;color:var(--mute);border-top:1.5px dashed var(--ink);padding-top:8px}
 
 /* 월별집계 */
 .seg{display:flex}
-.seg .chip{box-shadow:none;margin-left:-2px}
+.seg .chip{border-radius:0;margin-left:-1.5px}.seg .chip:first-child{border-radius:4px 0 0 4px}.seg .chip:last-child{border-radius:0 4px 4px 0}
 .seg .chip:first-child{margin-left:0}
 .grp{margin:0 8px 20px}
-.grp h3{margin:0 0 6px;font-size:15px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:3px}
+.grp h3{margin:0 0 6px;font-size:15px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;border-bottom:1.5px solid var(--ink);padding-bottom:3px}
 .grp h3 b{background:linear-gradient(transparent 55%,var(--ye) 55%)}
 .grp h3 span{font-size:13px;font-weight:700}
 .irow{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:baseline;padding:7px 4px;border-bottom:1px dashed #9fb0bd;cursor:pointer}
@@ -104,17 +103,19 @@ input,select{display:block;width:100%;font:inherit;font-weight:400;border:2px so
 .soon .stamp{font-size:20px;padding:2px 14px}
 
 /* 대화상자 */
-dialog{width:min(94vw,460px);max-height:92vh;overflow:auto;padding:16px;border:2px solid var(--ink);background:var(--paper);color:var(--ink);box-shadow:6px 6px 0 var(--ink)}
+dialog{width:min(94vw,460px);max-height:92vh;overflow:auto;padding:16px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);box-shadow:0 6px 24px rgba(30,40,60,.3);border-radius:6px}
 dialog::backdrop{background:rgba(27,27,47,.5)}
 dialog h2{margin:0 0 4px;font-size:18px}
-dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:2px solid var(--ink);padding-bottom:3px}
+dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);padding-bottom:3px}
 .covrow{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
 .ev{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:6px 0;border-bottom:1px dashed #9fb0bd}
 .ev .d{flex:1;font-size:13px;min-width:120px}
-.evform{margin-top:10px;padding:10px;border:2px dashed var(--ink)}
+.evform{margin-top:10px;padding:10px;border:1.5px dashed var(--ink);border-radius:4px}
+.cv.big{cursor:pointer}.cv.big:hover{background:#DDE9F1}
+#w-busy{margin:12px 0 0;padding:8px 10px;background:var(--ye);border:1.5px solid var(--ink);border-radius:4px;font-weight:700;font-size:13px}
 
 /* 로그인 */
-#login{max-width:340px;margin:12vh auto 0;padding:18px;border:2px solid var(--ink);background:var(--paper);box-shadow:5px 5px 0 var(--ink)}
+#login{max-width:340px;margin:12vh auto 0;padding:18px;border:1.5px solid var(--ink);background:var(--paper);border-radius:6px;box-shadow:0 4px 18px rgba(30,40,60,.18)}
 #login h1{margin:0 0 6px}
 
 footer{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--mute)}
@@ -158,28 +159,27 @@ footer{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;f
   </div>
   <label>표지</label>
   <div class="covrow">
-    <div class="cv big" id="w-cv"></div>
+    <div class="cv big" id="w-cv" role="button" tabindex="0" aria-label="표지 이미지 선택"></div>
     <div>
       <input type="file" id="w-file" accept="image/*" hidden>
-      <button class="btn sm" id="w-pick" type="button">이미지 선택</button>
       <button class="btn sm" id="w-clr" type="button">표지 빼기</button>
-      <p class="hint">세로 200px WebP로 줄여서 올라가요. 파일 삭제는 mnmn에서 해요.</p>
+      <p class="hint">왼쪽 박스를 누르면 이미지를 고를 수 있어요. 세로 200px WebP로 줄여서 올라가요. 파일 삭제는 mnmn에서 해요.</p>
     </div>
   </div>
-  <div class="btns"><button class="btn pri" id="w-save" type="button">저장</button><button class="btn" id="w-close" type="button">닫기</button></div>
-
   <section id="w-ev" hidden>
     <h3>이벤트</h3>
     <div id="ev-list"></div>
     <div class="evform">
       <label style="margin-top:0">종류<select id="e-type"></select></label>
       <div class="two">
-        <label>시작일<input id="e-s" type="date"></label>
-        <label>종료일<input id="e-e" type="date"></label>
+        <label>시작일<input id="e-s" type="date" min="1900-01-01" max="2099-12-31"></label>
+        <label>종료일<input id="e-e" type="date" min="1900-01-01" max="2099-12-31"></label>
       </div>
       <div class="btns" style="margin-top:10px"><button class="btn pri sm" id="e-save" type="button">추가</button><button class="btn sm" id="e-cancel" type="button" hidden>취소</button></div>
     </div>
   </section>
+  <div id="w-busy" role="status" hidden></div>
+  <div class="btns"><button class="btn pri" id="w-save" type="button">저장</button><button class="btn" id="w-close" type="button">닫기</button></div>
   <div style="margin-top:18px" id="w-delbox" hidden>
     <button class="btn dng sm" id="w-del" type="button">작품 삭제</button>
   </div>
@@ -190,7 +190,7 @@ footer{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;f
 <dialog id="ind">
   <h2 id="in-t">수입 기록</h2>
   <label>작품<select id="i-work"></select></label>
-  <label>기간 (연월)<input id="i-span" type="month"></label>
+  <label>기간 (연월)<input id="i-span" type="month" min="1900-01" max="2099-12"></label>
   <div class="two">
     <label>판매량 (부)<input id="i-sell" type="number" min="0" step="1" inputmode="numeric"></label>
     <label>수입 (₩)<input id="i-inc" type="number" min="0" step="1" inputmode="numeric"></label>
@@ -322,6 +322,14 @@ $('view').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('[
 
 /* ---------- 작품 대화상자 ---------- */
 let cur={id:null,cover:null,pend:null,clear:false,eid:null};
+let busy=false;
+function setBusy(on,msg){
+  busy=on;
+  $('wd').querySelectorAll('button').forEach(b=>b.disabled=on);
+  $('w-busy').hidden=!on;$('w-busy').textContent=on?'⏳ '+msg:'';
+}
+addEventListener('beforeunload',e=>{if(busy){e.preventDefault();e.returnValue=''}});
+$('wd').addEventListener('cancel',e=>{if(busy)e.preventDefault()});
 $('e-type').innerHTML=TYPES.map(t=>`<option>${t}</option>`).join('');
 function setCv(){
   const box=$('w-cv');
@@ -340,25 +348,28 @@ function openWork(id){
   setCv();resetEv();renderEv();
   if(!$('wd').open)$('wd').showModal();
 }
-$('w-pick').onclick=()=>$('w-file').click();
+$('w-cv').onclick=()=>{if(!busy)$('w-file').click()};
+$('w-cv').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('w-cv').click()}};
 $('w-file').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
+  setBusy(true,'이미지 처리 중… 잠시만 기다려 주세요');
   try{
     const p=await Media.process(f);
     if(cur.pend)cur.pend.close();
     cur.pend=p;cur.clear=false;setCv();
   }catch(err){toast(err.message)}
+  finally{setBusy(false);e.target.value=''}
 };
 $('w-clr').onclick=()=>{if(cur.pend){cur.pend.close();cur.pend=null}cur.clear=true;$('w-file').value='';setCv()};
 $('w-close').onclick=()=>$('wd').close();
-$('wd').addEventListener('close',()=>{if(cur.pend){cur.pend.close();cur.pend=null}});
+$('wd').addEventListener('close',()=>{if(busy){$('wd').showModal();return}if(cur.pend){cur.pend.close();cur.pend=null}});
 const dec=v=>v===''?null:+v, int=v=>v===''?null:Math.round(+v);
 $('w-save').onclick=async()=>{
   const name=$('w-name').value.trim();
   if(!name){toast('작품 이름을 입력해 주세요');return}
   const vol=dec($('w-vol').value),price=int($('w-price').value);
   if((vol!=null&&!(vol>=0))||(price!=null&&!(price>=0))){toast('분량과 가격은 0 이상 숫자로 입력해 주세요');return}
-  $('w-save').disabled=true;
+  setBusy(true,cur.pend?'이미지 업로드 중… 창을 닫지 마세요':'저장 중…');
   try{
     let cover=cur.clear?null:cur.cover;
     if(cur.pend){cover=await Media.upload(cur.pend);cur.pend.close();cur.pend=null}   // 해시 16자 반환
@@ -366,14 +377,14 @@ $('w-save').onclick=async()=>{
     if(cur.id){
       const {error}=await sb.from('wkwk_work').update(row).eq('id',cur.id);
       if(fail(error))return;
-      await loadAll();$('wd').close();toast('저장했어요');
+      await loadAll();setBusy(false);$('wd').close();toast('저장했어요');
     }else{
       const {data,error}=await sb.from('wkwk_work').insert({...row,user_id:S.uid}).select().single();
       if(fail(error))return;
       await loadAll();openWork(data.id);toast('저장했어요. 이벤트를 추가해 보세요');
     }
   }catch(err){toast(err.message)}
-  finally{$('w-save').disabled=false}
+  finally{setBusy(false)}
 };
 $('w-del').onclick=async()=>{
   const w=S.works.find(x=>x.id===cur.id);if(!w||isPub(w))return;
@@ -391,7 +402,7 @@ function renderEv(){
   $('w-delbox').hidden=!w||isPub(w);
   $('w-pubnote').hidden=!w||!isPub(w);
   if(!w)return;
-  const list=sortEv(evOf(w.id));
+  const list=sortEv(evOf(w.id)).reverse();   // 오래된 것이 위, 최근이 아래
   $('ev-list').innerHTML=list.length?list.map(e=>`<div class="ev">${stamp(e.type)}<span class="d num">${evDates(e)}</span>
     <button class="btn sm" type="button" data-eed="${e.id}">수정</button><button class="btn sm" type="button" data-edel="${e.id}">삭제</button></div>`).join(''):'<p class="hint">이벤트가 없어요. 상태는 \'미시작\'으로 보여요.</p>';
 }
