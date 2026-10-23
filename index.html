@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>wkwk 작업노트</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#FFE600">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="wkwk">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://jjojjolonglong-sudo.github.io/mnmn/media.js"></script>
+<style>
+/* 콘셉트: 인쇄소 교정쇄. 원고지 격자 위의 종이, 재단선, 도장, 영수증 */
+:root{
+  --ink:#1B1B2F; --paper:#FCFDFE; --bg:#E3ECF2; --grid:#C3D8E5; --slip:#FFFBD6;
+  --cy:#14B4DA; --mg:#E6338A; --ye:#FFE600; --mute:#5b6672;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  min-width:300px; color:var(--ink); background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
+  font-size:15px; line-height:1.4; -webkit-text-size-adjust:100%;
+}
+.num{font-family:'Courier New','D2Coding',monospace;font-variant-numeric:tabular-nums}
+#app{max-width:560px;margin:0 auto;padding:14px 12px 28px;min-height:100vh}
+
+/* 머리글 */
+.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.logo{margin:0;font-family:'Courier New',monospace;font-size:26px;font-weight:900;letter-spacing:-.02em;background:var(--ye);border:2px solid var(--ink);padding:0 8px;box-shadow:3px 3px 0 var(--ink)}
+.sub{font-weight:700;font-size:13px;flex:1}
+
+/* 색인 탭 */
+.tabs{display:flex;gap:4px;padding-left:8px;margin-bottom:-2px;position:relative;z-index:2}
+.tab{font:inherit;font-weight:800;padding:6px 12px 5px;margin-top:8px;border:2px solid var(--ink);border-bottom:0;background:#CFE0EA;color:var(--ink);cursor:pointer}
+.tab[aria-selected=true]{background:var(--ye);margin-top:0;padding-top:12px}
+.sheet{position:relative;z-index:1;background:var(--paper);border:2px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:18px 10px 22px;min-height:340px}
+
+/* 버튼·입력 */
+button{font:inherit;color:inherit}
+.btn{font-weight:800;border:2px solid var(--ink);background:#fff;padding:6px 12px;box-shadow:2px 2px 0 var(--ink);cursor:pointer}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn.pri{background:var(--ye)} .btn.dng{background:var(--mg);color:#fff} .btn.sm{padding:2px 8px;font-size:13px}
+.btn:focus-visible,.tab:focus-visible,.chip:focus-visible,.card:focus-visible,.irow:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--cy);outline-offset:2px}
+label{display:block;font-weight:800;font-size:13px;margin-top:10px}
+input,select{display:block;width:100%;font:inherit;font-weight:400;border:2px solid var(--ink);background:#fff;color:var(--ink);padding:7px 8px;margin-top:3px;border-radius:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.hint{font-size:12px;color:var(--mute);margin:6px 0 0}
+.empty{text-align:center;color:var(--mute);padding:36px 8px}
+.bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 8px 18px}
+
+/* 도장 */
+.stamp{display:inline-block;border:2px solid var(--c);color:var(--c);font-weight:900;font-size:13px;letter-spacing:.08em;padding:0 7px;border-radius:3px;transform:rotate(-3deg);background:#fff}
+.stamp.pub{background:var(--ye);border-color:var(--ink);color:var(--ink)}
+
+/* 작품 카드: 모서리에 재단선 */
+.card{position:relative;display:grid;grid-template-columns:64px 1fr;gap:12px;margin:0 10px 22px;padding:10px;border:2px solid var(--ink);background:#fff;cursor:pointer}
+.card::before,.card::after{content:"";position:absolute;width:9px;height:9px}
+.card::before{left:-12px;top:-12px;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)}
+.card::after{right:-12px;bottom:-12px;border-left:1.5px solid var(--ink);border-top:1.5px solid var(--ink)}
+.cv{position:relative;width:64px;height:88px;border:2px solid var(--ink);background:#EAF2F7;overflow:hidden;display:grid;place-items:center;color:#9fb6c4;font-weight:900;font-size:22px}
+.cv::before{content:"+"}
+.cv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
+.cv.big{width:84px;height:116px;flex:none}
+.ci{min-width:0}
+.nm{font-weight:900;font-size:17px;overflow-wrap:anywhere}
+.pn{font-size:13px;color:var(--mute)}
+.mt{margin-top:4px;font-size:14px}
+.sr{margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pd{font-size:12px;font-weight:700}
+
+/* 메인: 선택 칩 + 영수증 */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 8px}
+.chip{font-weight:800;border:2px solid var(--ink);background:#fff;padding:5px 12px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.chip[aria-pressed=true]{background:var(--ink);color:#fff;box-shadow:none;transform:translate(2px,2px)}
+.slip{margin:22px 8px 6px;padding:18px 14px 14px;border:2px solid var(--ink);background:var(--slip);text-align:center}
+.slip .l1{font-weight:800;font-size:13px;padding-bottom:10px;border-bottom:2px dashed var(--ink);overflow-wrap:anywhere}
+.slip .amt{font-size:clamp(26px,9vw,40px);font-weight:900;padding:14px 0 8px;overflow-wrap:anywhere}
+.slip .l3{font-size:12px;color:var(--mute);border-top:2px dashed var(--ink);padding-top:8px}
+
+/* 월별집계 */
+.seg{display:flex}
+.seg .chip{box-shadow:none;margin-left:-2px}
+.seg .chip:first-child{margin-left:0}
+.grp{margin:0 8px 20px}
+.grp h3{margin:0 0 6px;font-size:15px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:3px}
+.grp h3 b{background:linear-gradient(transparent 55%,var(--ye) 55%)}
+.grp h3 span{font-size:13px;font-weight:700}
+.irow{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:baseline;padding:7px 4px;border-bottom:1px dashed #9fb0bd;cursor:pointer}
+.irow:hover{background:#FFFBD6}
+.irow .a{font-weight:700;overflow-wrap:anywhere}
+.irow .s{font-size:13px;color:var(--mute)}
+
+/* 원고(준비중) */
+.soon{text-align:center;padding:40px 12px}
+.soon .stamp{font-size:20px;padding:2px 14px}
+
+/* 대화상자 */
+dialog{width:min(94vw,460px);max-height:92vh;overflow:auto;padding:16px;border:2px solid var(--ink);background:var(--paper);color:var(--ink);box-shadow:6px 6px 0 var(--ink)}
+dialog::backdrop{background:rgba(27,27,47,.5)}
+dialog h2{margin:0 0 4px;font-size:18px}
+dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:2px solid var(--ink);padding-bottom:3px}
+.covrow{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
+.ev{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:6px 0;border-bottom:1px dashed #9fb0bd}
+.ev .d{flex:1;font-size:13px;min-width:120px}
+.evform{margin-top:10px;padding:10px;border:2px dashed var(--ink)}
+
+/* 로그인 */
+#login{max-width:340px;margin:12vh auto 0;padding:18px;border:2px solid var(--ink);background:var(--paper);box-shadow:5px 5px 0 var(--ink)}
+#login h1{margin:0 0 6px}
+
+footer{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--mute)}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:90vw;background:var(--ink);color:#fff;padding:9px 14px;font-weight:700;z-index:99;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+
+<div id="login" hidden>
+  <h1 class="logo" style="display:inline-block">wkwk</h1>
+  <label>이메일<input id="em" type="email" autocomplete="username"></label>
+  <label>비밀번호<input id="pw" type="password" autocomplete="current-password"></label>
+  <div class="btns"><button class="btn pri" id="go">로그인</button></div>
+</div>
+
+<div id="app" hidden>
+  <header class="top">
+    <h1 class="logo">wkwk</h1><span class="sub">작업노트</span>
+    <button class="btn sm" id="out">로그아웃</button>
+  </header>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="main">메인</button>
+    <button class="tab" role="tab" data-tab="works">작품</button>
+    <button class="tab" role="tab" data-tab="copy">원고</button>
+    <button class="tab" role="tab" data-tab="inc">월별집계</button>
+  </nav>
+  <main class="sheet" id="view"></main>
+  <footer><button class="btn sm" id="inst" hidden>앱 설치</button><span>배포 후에는 Ctrl+Shift+R 로 새로고침</span></footer>
+</div>
+
+<!-- 작품 -->
+<dialog id="wd">
+  <h2 id="wd-t">작품</h2>
+  <label>작품 이름<input id="w-name" maxlength="100"></label>
+  <label>필명<input id="w-pen" maxlength="60"></label>
+  <div class="two">
+    <label>분량 (만자, 공미포)<input id="w-vol" type="number" step="0.1" min="0" inputmode="decimal" placeholder="12.5"></label>
+    <label>가격 (₩)<input id="w-price" type="number" step="1" min="0" inputmode="numeric"></label>
+  </div>
+  <label>표지</label>
+  <div class="covrow">
+    <div class="cv big" id="w-cv"></div>
+    <div>
+      <input type="file" id="w-file" accept="image/*" hidden>
+      <button class="btn sm" id="w-pick" type="button">이미지 선택</button>
+      <button class="btn sm" id="w-clr" type="button">표지 빼기</button>
+      <p class="hint">세로 200px WebP로 줄여서 올라가요. 파일 삭제는 mnmn에서 해요.</p>
+    </div>
+  </div>
+  <div class="btns"><button class="btn pri" id="w-save" type="button">저장</button><button class="btn" id="w-close" type="button">닫기</button></div>
+
+  <section id="w-ev" hidden>
+    <h3>이벤트</h3>
+    <div id="ev-list"></div>
+    <div class="evform">
+      <label style="margin-top:0">종류<select id="e-type"></select></label>
+      <div class="two">
+        <label>시작일<input id="e-s" type="date"></label>
+        <label>종료일<input id="e-e" type="date"></label>
+      </div>
+      <div class="btns" style="margin-top:10px"><button class="btn pri sm" id="e-save" type="button">추가</button><button class="btn sm" id="e-cancel" type="button" hidden>취소</button></div>
+    </div>
+  </section>
+  <div style="margin-top:18px" id="w-delbox" hidden>
+    <button class="btn dng sm" id="w-del" type="button">작품 삭제</button>
+  </div>
+  <p class="hint" id="w-pubnote" hidden>출간된 작품은 삭제할 수 없어요.</p>
+</dialog>
+
+<!-- 수입 -->
+<dialog id="ind">
+  <h2 id="in-t">수입 기록</h2>
+  <label>작품<select id="i-work"></select></label>
+  <label>기간 (연월)<input id="i-span" type="month"></label>
+  <div class="two">
+    <label>판매량 (부)<input id="i-sell" type="number" min="0" step="1" inputmode="numeric"></label>
+    <label>수입 (₩)<input id="i-inc" type="number" min="0" step="1" inputmode="numeric"></label>
+  </div>
+  <label>리디북스 별점 (별 개수)<input id="i-star" type="number" min="0" step="1" inputmode="numeric"></label>
+  <div class="btns">
+    <button class="btn pri" id="i-save" type="button">저장</button>
+    <button class="btn" id="i-close" type="button">닫기</button>
+    <button class="btn dng" id="i-del" type="button" hidden>삭제</button>
+  </div>
+</dialog>
+
+<div id="toast" role="status"></div>
+
+<script>
+const SUPABASE_URL='https://rtvvajhsnwkkrmncyfbs.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0dnZhamhzbndra3JtbmN5ZmJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NjkwMTEsImV4cCI6MjEwNzA0NTAxMX0.O2aLLeazv_FhUhbVAkp4vz3pw8GPb_683dUu7Et1Cwk';
+const MEDIA_URL='https://media.jjojjolonglong.workers.dev';
+
+/* media.js를 못 불러와도 앱이 죽지 않게 하는 스텁 */
+if(!window.Media){
+  const no=async()=>{throw new Error('이미지 모듈(media.js)을 불러오지 못했어요')};
+  window.Media={init(){},url:()=>'',img:()=>'',process:no,upload:no,canEncodeWebp:()=>false};
+}
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtW=n=>n==null?'-':'₩'+Number(n).toLocaleString('ko-KR');
+const fmtN=n=>n==null?'-':Number(n).toLocaleString('ko-KR');
+const TYPES=['초고','퇴고','투고','계약','교정','출간'];
+const STC={'초고':'#0E9EC2','퇴고':'#7A4FD6','투고':'#E6338A','계약':'#E8632B','교정':'#2E9E4F','출간':'#1B1B2F','미시작':'#8a94a0'};
+const stamp=st=>`<span class="stamp${st==='출간'?' pub':''}" style="--c:${STC[st]||'#8a94a0'}">${esc(st)}</span>`;
+
+let toastT;
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3200)}
+function fail(e){if(!e)return false;toast(e.message||String(e));return true}
+
+if(!window.supabase){document.body.innerHTML='<p style="padding:20px">Supabase 라이브러리를 불러오지 못했어요. 네트워크를 확인하고 새로고침해 주세요.</p>';throw new Error('no supabase')}
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+Media.init({worker:MEDIA_URL,getToken:async()=>(await sb.auth.getSession()).data.session?.access_token});
+
+/* ---------- 상태 ---------- */
+const S={works:[],ev:[],inc:[],tab:'main',sel:'all',iv:'month',uid:null};
+const evOf=id=>S.ev.filter(e=>e.work_id===id);
+const ekey=e=>(e.end_date||e.start_date||(e.created_at||'').slice(0,10))+'|'+(e.created_at||'');
+const sortEv=a=>[...a].sort((x,y)=>ekey(x)<ekey(y)?1:-1);          // 최근 것이 앞
+const status=w=>{const e=sortEv(evOf(w.id))[0];return e?e.type:'미시작'};   // 상태 = 가장 최근 이벤트의 종류
+const isPub=w=>evOf(w.id).some(e=>e.type==='출간');
+const pubDate=w=>evOf(w.id).filter(e=>e.type==='출간'&&e.start_date).map(e=>e.start_date).sort()[0]||'';
+const wname=id=>(S.works.find(w=>w.id===id)||{}).name||'(삭제된 작품)';
+
+async function loadAll(){
+  const [a,b,c]=await Promise.all([
+    sb.from('wkwk_work').select('*').order('created_at',{ascending:false}),
+    sb.from('wkwk_event').select('*'),
+    sb.from('wkwk_income').select('*')]);
+  const er=a.error||b.error||c.error;
+  if(er){fail(er);return}
+  S.works=a.data;S.ev=b.data;S.inc=c.data;render();
+}
+
+/* ---------- 화면 ---------- */
+function vMain(){
+  const pubs=S.works.filter(isPub);
+  if(S.sel!=='all'&&!pubs.some(w=>w.id===S.sel))S.sel='all';
+  if(!pubs.length)return '<p class="empty">아직 출간된 작품이 없어요.<br>작품에 \'출간\' 이벤트를 넣으면 여기 나타나요.</p>';
+  const chips=[['all','전체'],...pubs.map(w=>[w.id,w.name])]
+    .map(([id,n])=>`<button class="chip" data-sel="${id}" aria-pressed="${S.sel===id}">${esc(n)}</button>`).join('');
+  const rows=S.sel==='all'?S.inc:S.inc.filter(i=>i.work_id===S.sel);
+  const sum=rows.reduce((a,i)=>a+(i.income||0),0);
+  const title=S.sel==='all'?'전체 작품':wname(S.sel);
+  return `<div class="chips">${chips}</div>
+  <div class="slip"><div class="l1">${esc(title)}</div><div class="amt num">${fmtW(sum)}</div><div class="l3">수입금 합계 (${rows.length}건)</div></div>`;
+}
+function card(w){
+  const st=status(w),pd=pubDate(w);
+  const vol=w.vol!=null?`${+w.vol}만자`:'분량 -';
+  return `<article class="card" tabindex="0" role="button" data-work="${w.id}">
+    <div class="cv">${Media.img(w.cover,'onerror="this.remove()"')}</div>
+    <div class="ci"><div class="nm">${esc(w.name)}</div><div class="pn">${esc(w.penname||'필명 없음')}</div>
+    <div class="mt num">${vol} / ${fmtW(w.price)}</div>
+    <div class="sr">${stamp(st)}${pd?`<span class="pd num">출간 ${pd}</span>`:''}</div></div></article>`;
+}
+function vWorks(){
+  return `<div class="bar"><button class="btn pri" data-act="addwork">+ 작품 추가</button></div>`+
+    (S.works.length?S.works.map(card).join(''):'<p class="empty">작품이 없어요. 위 버튼으로 추가해 보세요.</p>');
+}
+function vCopy(){
+  return `<div class="soon"><span class="stamp" style="--c:#8a94a0">준비중</span>
+  <p class="hint" style="margin-top:16px">원고 탭은 아직 비워두었어요.<br>wkwk_copy 테이블(날짜, 파일 경로)은 만들어져 있어요.</p></div>`;
+}
+function vInc(){
+  const head=`<div class="bar"><div class="seg">
+    <button class="chip" data-iv="month" aria-pressed="${S.iv==='month'}">월별</button>
+    <button class="chip" data-iv="work" aria-pressed="${S.iv==='work'}">작품별</button></div>
+    <button class="btn pri" data-act="addinc">+ 기록 추가</button></div>`;
+  if(!S.inc.length)return head+'<p class="empty">아직 기록이 없어요.</p>';
+  const byMonth=S.iv==='month';
+  const g=new Map();
+  for(const i of S.inc){const k=byMonth?i.span.slice(0,7):i.work_id;(g.get(k)||g.set(k,[]).get(k)).push(i)}
+  const keys=[...g.keys()].sort(byMonth?(a,b)=>a<b?1:-1:(a,b)=>wname(a).localeCompare(wname(b),'ko'));
+  return head+keys.map(k=>{
+    const rs=g.get(k);
+    rs.sort(byMonth?(a,b)=>wname(a.work_id).localeCompare(wname(b.work_id),'ko'):(a,b)=>a.span<b.span?1:-1);
+    const ts=rs.reduce((a,i)=>a+(i.sell||0),0),ti=rs.reduce((a,i)=>a+(i.income||0),0);
+    const label=byMonth?`${k.slice(0,4)}년 ${+k.slice(5)}월`:esc(wname(k));
+    return `<section class="grp"><h3><b>${label}</b><span class="num">판매 ${fmtN(ts)}부 / ${fmtW(ti)}</span></h3>`+
+      rs.map(i=>`<div class="irow" tabindex="0" role="button" data-inc="${i.id}">
+        <span class="a">${byMonth?esc(wname(i.work_id)):`${i.span.slice(0,4)}.${i.span.slice(5,7)}`}</span>
+        <span class="s num">${fmtN(i.sell)}부</span><span class="num">${fmtW(i.income)}</span><span class="s num">★${fmtN(i.star)}</span></div>`).join('')+'</section>';
+  }).join('');
+}
+function render(){
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.tab===S.tab)));
+  $('view').innerHTML=({main:vMain,works:vWorks,copy:vCopy,inc:vInc})[S.tab]();
+}
+document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(t){S.tab=t.dataset.tab;render()}});
+$('view').addEventListener('click',e=>{
+  const t=e.target.closest('[data-sel],[data-iv],[data-work],[data-inc],[data-act]');if(!t)return;
+  const d=t.dataset;
+  if(d.sel){S.sel=d.sel;render()}
+  else if(d.iv){S.iv=d.iv;render()}
+  else if(d.work)openWork(d.work);
+  else if(d.inc)openInc(d.inc);
+  else if(d.act==='addwork')openWork(null);
+  else if(d.act==='addinc')openInc(null);
+});
+$('view').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('[data-work],[data-inc]'))e.target.click()});
+
+/* ---------- 작품 대화상자 ---------- */
+let cur={id:null,cover:null,pend:null,clear:false,eid:null};
+$('e-type').innerHTML=TYPES.map(t=>`<option>${t}</option>`).join('');
+function setCv(){
+  const box=$('w-cv');
+  if(cur.pend)box.innerHTML=`<img alt="" src="${cur.pend.previewUrl}">`;
+  else if(cur.cover&&!cur.clear)box.innerHTML=Media.img(cur.cover,'onerror="this.remove()"');
+  else box.innerHTML='';
+}
+function openWork(id){
+  const w=id?S.works.find(x=>x.id===id):null;
+  if(cur.pend){cur.pend.close()}
+  cur={id:id||null,cover:w?w.cover:null,pend:null,clear:false,eid:null};
+  $('wd-t').textContent=w?'작품 수정':'새 작품';
+  $('w-name').value=w?w.name:'';$('w-pen').value=w?w.penname||'':'';
+  $('w-vol').value=w&&w.vol!=null?+w.vol:'';$('w-price').value=w&&w.price!=null?w.price:'';
+  $('w-file').value='';
+  setCv();resetEv();renderEv();
+  if(!$('wd').open)$('wd').showModal();
+}
+$('w-pick').onclick=()=>$('w-file').click();
+$('w-file').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{
+    const p=await Media.process(f);
+    if(cur.pend)cur.pend.close();
+    cur.pend=p;cur.clear=false;setCv();
+  }catch(err){toast(err.message)}
+};
+$('w-clr').onclick=()=>{if(cur.pend){cur.pend.close();cur.pend=null}cur.clear=true;$('w-file').value='';setCv()};
+$('w-close').onclick=()=>$('wd').close();
+$('wd').addEventListener('close',()=>{if(cur.pend){cur.pend.close();cur.pend=null}});
+const dec=v=>v===''?null:+v, int=v=>v===''?null:Math.round(+v);
+$('w-save').onclick=async()=>{
+  const name=$('w-name').value.trim();
+  if(!name){toast('작품 이름을 입력해 주세요');return}
+  const vol=dec($('w-vol').value),price=int($('w-price').value);
+  if((vol!=null&&!(vol>=0))||(price!=null&&!(price>=0))){toast('분량과 가격은 0 이상 숫자로 입력해 주세요');return}
+  $('w-save').disabled=true;
+  try{
+    let cover=cur.clear?null:cur.cover;
+    if(cur.pend){cover=await Media.upload(cur.pend);cur.pend.close();cur.pend=null}   // 해시 16자 반환
+    const row={name,penname:$('w-pen').value.trim()||null,vol,price,cover};
+    if(cur.id){
+      const {error}=await sb.from('wkwk_work').update(row).eq('id',cur.id);
+      if(fail(error))return;
+      await loadAll();$('wd').close();toast('저장했어요');
+    }else{
+      const {data,error}=await sb.from('wkwk_work').insert({...row,user_id:S.uid}).select().single();
+      if(fail(error))return;
+      await loadAll();openWork(data.id);toast('저장했어요. 이벤트를 추가해 보세요');
+    }
+  }catch(err){toast(err.message)}
+  finally{$('w-save').disabled=false}
+};
+$('w-del').onclick=async()=>{
+  const w=S.works.find(x=>x.id===cur.id);if(!w||isPub(w))return;
+  if(!confirm('작품과 연결된 이벤트·원고·수입 기록이 모두 지워져요. 삭제할까요?'))return;
+  const {error}=await sb.from('wkwk_work').delete().eq('id',w.id);
+  if(fail(error))return;
+  $('wd').close();await loadAll();toast('삭제했어요');
+};
+
+/* 이벤트 */
+const evDates=e=>e.start_date&&e.end_date?`${e.start_date} ~ ${e.end_date}`:e.start_date?`${e.start_date} ~`:e.end_date?`~ ${e.end_date}`:'날짜 없음';
+function renderEv(){
+  const w=S.works.find(x=>x.id===cur.id);
+  $('w-ev').hidden=!w;
+  $('w-delbox').hidden=!w||isPub(w);
+  $('w-pubnote').hidden=!w||!isPub(w);
+  if(!w)return;
+  const list=sortEv(evOf(w.id));
+  $('ev-list').innerHTML=list.length?list.map(e=>`<div class="ev">${stamp(e.type)}<span class="d num">${evDates(e)}</span>
+    <button class="btn sm" type="button" data-eed="${e.id}">수정</button><button class="btn sm" type="button" data-edel="${e.id}">삭제</button></div>`).join(''):'<p class="hint">이벤트가 없어요. 상태는 \'미시작\'으로 보여요.</p>';
+}
+function resetEv(){cur.eid=null;$('e-type').value='초고';$('e-s').value='';$('e-e').value='';$('e-save').textContent='추가';$('e-cancel').hidden=true}
+$('e-cancel').onclick=resetEv;
+$('ev-list').addEventListener('click',async e=>{
+  const ed=e.target.closest('[data-eed]'),dl=e.target.closest('[data-edel]');
+  if(ed){const ev=S.ev.find(x=>x.id===ed.dataset.eed);if(!ev)return;
+    cur.eid=ev.id;$('e-type').value=ev.type;$('e-s').value=ev.start_date||'';$('e-e').value=ev.end_date||'';
+    $('e-save').textContent='수정 저장';$('e-cancel').hidden=false}
+  else if(dl){if(!confirm('이 이벤트를 삭제할까요?'))return;
+    const {error}=await sb.from('wkwk_event').delete().eq('id',dl.dataset.edel);
+    if(fail(error))return;resetEv();await loadAll();renderEv()}
+});
+$('e-save').onclick=async()=>{
+  const s=$('e-s').value||null,en=$('e-e').value||null;
+  if(s&&en&&s>en){toast('종료일이 시작일보다 빨라요');return}
+  const row={type:$('e-type').value,start_date:s,end_date:en};
+  const r=cur.eid?await sb.from('wkwk_event').update(row).eq('id',cur.eid)
+                 :await sb.from('wkwk_event').insert({...row,work_id:cur.id,user_id:S.uid});
+  if(fail(r.error))return;
+  resetEv();await loadAll();renderEv();
+};
+
+/* ---------- 수입 대화상자 ---------- */
+let incId=null;
+function openInc(id){
+  if(!S.works.length){toast('먼저 작품을 추가해 주세요');return}
+  const r=id?S.inc.find(x=>x.id===id):null;incId=id||null;
+  const ws=[...S.works].sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  $('i-work').innerHTML=ws.map(w=>`<option value="${w.id}">${esc(w.name)}</option>`).join('');
+  const d=new Date(),ym=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  $('in-t').textContent=r?'수입 기록 수정':'수입 기록 추가';
+  $('i-work').value=r?r.work_id:(S.sel!=='all'&&S.tab==='main'?S.sel:ws[0].id);
+  $('i-span').value=r?r.span.slice(0,7):ym;
+  $('i-sell').value=r&&r.sell!=null?r.sell:'';$('i-inc').value=r&&r.income!=null?r.income:'';$('i-star').value=r&&r.star!=null?r.star:'';
+  $('i-del').hidden=!r;
+  $('ind').showModal();
+}
+$('i-close').onclick=()=>$('ind').close();
+$('i-save').onclick=async()=>{
+  const m=$('i-span').value;if(!m){toast('연월을 선택해 주세요');return}
+  const sell=int($('i-sell').value),income=int($('i-inc').value),star=int($('i-star').value);
+  if([sell,income,star].some(v=>v!=null&&!(v>=0))){toast('0 이상 숫자로 입력해 주세요');return}
+  const row={work_id:$('i-work').value,span:m+'-01',sell,income,star};
+  const r=incId?await sb.from('wkwk_income').update(row).eq('id',incId)
+                :await sb.from('wkwk_income').insert({...row,user_id:S.uid});
+  if(r.error){toast(r.error.code==='23505'?'그 작품의 같은 연월 기록이 이미 있어요. 기존 기록을 눌러 수정해 주세요':r.error.message);return}
+  $('ind').close();await loadAll();toast('저장했어요');
+};
+$('i-del').onclick=async()=>{
+  if(!confirm('이 기록을 삭제할까요?'))return;
+  const {error}=await sb.from('wkwk_income').delete().eq('id',incId);
+  if(fail(error))return;
+  $('ind').close();await loadAll();toast('삭제했어요');
+};
+
+/* ---------- 로그인 ---------- */
+async function boot(){
+  const {data:{session}}=await sb.auth.getSession();
+  $('login').hidden=!!session;$('app').hidden=!session;
+  if(!session)return;
+  S.uid=session.user.id;
+  $('view').innerHTML='<p class="empty">불러오는 중…</p>';
+  render();await loadAll();
+}
+$('go').onclick=async()=>{
+  const {error}=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+  if(!fail(error))boot();
+};
+$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('go').click()});
+$('out').onclick=async()=>{await sb.auth.signOut();S.works=[];S.ev=[];S.inc=[];boot()};
+
+/* ---------- 앱 설치 (PC·모바일 공통) ---------- */
+let dp=null;
+const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+if(!standalone)$('inst').hidden=false;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e});
+addEventListener('appinstalled',()=>{$('inst').hidden=true});
+$('inst').onclick=async()=>{
+  if(dp){dp.prompt();await dp.userChoice;dp=null}
+  else alert('크롬 메뉴(⋮) → "앱 설치" 또는 "홈 화면에 추가"를 눌러 주세요.\n(앱 안의 브라우저가 아니라 크롬에서 열어야 해요)');
+};
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+boot();
+</script>
+</body>
+</html>

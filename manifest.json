@@ -1,0 +1,17 @@
+{
+  "id": "/wkwk/",
+  "name": "wkwk 작업노트",
+  "short_name": "wkwk",
+  "description": "집필부터 출간까지 작업노트",
+  "lang": "ko",
+  "start_url": "/wkwk/",
+  "scope": "/wkwk/",
+  "display": "standalone",
+  "background_color": "#E3ECF2",
+  "theme_color": "#FFE600",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
