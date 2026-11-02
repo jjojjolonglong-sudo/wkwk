@@ -12,7 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="wkwk">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="https://jjojjolonglong-sudo.github.io/mnmn/media.js"></script>
+<script src="https://jjojjolonglong-sudo.github.io/mnmn/config.js"></script>
+<script src="https://jjojjolonglong-sudo.github.io/mnmn/media.v1.js"></script>
 <style>
 /* 콘셉트: 오피스풍 교정쇄. 원고지 격자 위의 종이, 한쪽 귀퉁이를 자른 네모, 영수증 */
 :root{
@@ -227,9 +228,11 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
 <div id="toast" role="status"></div>
 
 <script>
-const SUPABASE_URL='https://rtvvajhsnwkkrmncyfbs.supabase.co';
-const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0dnZhamhzbndra3JtbmN5ZmJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NjkwMTEsImV4cCI6MjEwNzA0NTAxMX0.O2aLLeazv_FhUhbVAkp4vz3pw8GPb_683dUu7Et1Cwk';
-const MEDIA_URL='https://media.jjojjolonglong.workers.dev';
+const CFG=window.APP_CONFIG||{};   // 공용 설정(config.js). 못 불러와도(오프라인 등) 아래 값으로 동작해요
+if(!window.todayKST)window.todayKST=()=>new Date(Date.now()+32400000).toISOString().slice(0,10);
+const SUPABASE_URL=CFG.SB||'https://rtvvajhsnwkkrmncyfbs.supabase.co';
+const SUPABASE_ANON_KEY=CFG.ANON||'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0dnZhamhzbndra3JtbmN5ZmJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NjkwMTEsImV4cCI6MjEwNzA0NTAxMX0.O2aLLeazv_FhUhbVAkp4vz3pw8GPb_683dUu7Et1Cwk';
+const MEDIA_URL=CFG.MEDIA||'https://media.jjojjolonglong.workers.dev';
 
 /* media.js를 못 불러와도 앱이 죽지 않게 하는 스텁 */
 if(!window.Media){
@@ -492,7 +495,7 @@ function openInc(id){
   const r=id?S.inc.find(x=>x.id===id):null;incId=id||null;
   const ws=[...S.works].sort((a,b)=>a.name.localeCompare(b.name,'ko'));
   $('i-work').innerHTML=ws.map(w=>`<option value="${w.id}">${esc(w.name)}</option>`).join('');
-  const d=new Date(),ym=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const ym=todayKST().slice(0,7);   // 한국 시간 기준 이번 달
   $('in-t').textContent=r?'수입 기록 수정':'수입 기록 추가';
   $('i-work').value=r?r.work_id:(S.sel!=='all'&&S.tab==='main'?S.sel:ws[0].id);
   $('i-span').value=r?r.span.slice(0,7):ym;
