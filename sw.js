@@ -1,7 +1,7 @@
 // wkwk 서비스 워커: 네트워크 우선 → 실패하면 캐시 (옛 버전이 남는 문제 방지)
 // 앱 파일(같은 도메인)만 다루고, Supabase / Worker / CDN 요청은 건드리지 않아요.
-const V = 'wkwk-v1';
-const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
+const V = 'wkwk-v2';
+const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(V).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
