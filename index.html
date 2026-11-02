@@ -145,15 +145,16 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
 #toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 /* 원고 탭 */
-.cptb{width:100%;border-collapse:collapse;font-size:14px}
+.cptb{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
 .cptb th{text-align:left;font-size:12px;color:var(--mute);padding:6px 8px;border-bottom:1.5px solid var(--ink);cursor:pointer;white-space:nowrap;user-select:none}
 .cptb td{padding:7px 8px;border-bottom:1px dashed var(--dash);vertical-align:top;word-break:break-word}
 .cptb td.num{white-space:nowrap;font-size:13px}
+.cptb tr.cprow td:nth-child(3),.cptb tr.cprow td:nth-child(4){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* 작품·파일명은 한 줄을 넘으면 …으로 */
+.cptb.nopv .cprow{cursor:default}.cptb.nopv .cprow:hover td{background:none}
 .cprow{cursor:pointer}.cprow:hover td{background:#F1F5F8}.cprow.open td{background:var(--slip)}
 .cptb tr.pv>td{padding:0;border-bottom:1.5px solid var(--ink)}
 .pvbox{position:relative;height:150px;overflow:hidden;padding:8px 10px;background:#fff;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
 .pvbox.mute{color:var(--mute);font-size:13px}
-.pvbox.cut::after{content:'…';position:absolute;right:0;bottom:0;padding:0 8px;background:#fff;font-weight:800}
 .pvbox .memo{color:var(--mute);font-size:12px}.pvbox .memo::before{content:'※ '}
 .pvbox .lk{color:var(--mute)}
 .cpun{margin-top:22px;padding-top:12px;border-top:1.5px dashed var(--dash)}
@@ -392,30 +393,46 @@ async function cpAfter(){   // 열린 행 아래 칸에 본문을 채움
     const key=f.uid+'|'+f.mod;let node=CP.cache.get(key);
     if(!node){node=cleanHtml(await cpBody(f));CP.cache.set(key,node)}
     box=$('pvbox');if(!box||CP.open!==r.id)return;   // 그새 다른 행을 눌렀으면 그만
-    box.replaceChildren(node.cloneNode(true));
-    if(box.scrollHeight>box.clientHeight+2)box.classList.add('cut');
+    fitPreview(box,node);
   }catch(e){box=$('pvbox');if(box){box.classList.add('mute');box.textContent='파일을 읽지 못했어요: '+e.message}}
+}
+/* 칸 크기에 들어가는 만큼의 글자까지만 보여주고, 맨 끝을 …으로 줄여요(글 단위로 자르므로 줄이 반쯤 잘려 보이지 않아요) */
+const textLen=n=>{let c=0;(function w(x){for(const k of x.childNodes){if(k.nodeType===3)c+=k.nodeValue.length;else w(k)}})(n);return c};
+function trimTo(root,n){let left=n;(function w(x){for(const k of [...x.childNodes]){
+  if(left<=0){k.remove();continue}
+  if(k.nodeType===3){if(k.nodeValue.length>left){let s=k.nodeValue.slice(0,left);if(/[\uD800-\uDBFF]$/.test(s))s=s.slice(0,-1);k.nodeValue=s;left=0}else left-=k.nodeValue.length}
+  else w(k)}})(root)}
+function addEllipsis(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let last=null,x;while(x=tw.nextNode())if(x.nodeValue.trim())last=x;
+  if(last)last.nodeValue=last.nodeValue.replace(/\s+$/,'')+'…';else root.append('…')}
+function fitPreview(box,node){
+  box.replaceChildren(node.cloneNode(true));
+  const fits=()=>box.scrollHeight<=box.clientHeight+1;
+  if(fits())return;                                   // 전부 들어가면 그대로
+  let lo=0,hi=textLen(node),best=0;
+  while(lo<=hi){const mid=(lo+hi)>>1,c=node.cloneNode(true);trimTo(c,mid);addEllipsis(c);box.replaceChildren(c);
+    if(fits()){best=mid;lo=mid+1}else hi=mid-1}
+  const c=node.cloneNode(true);trimTo(c,best);addEllipsis(c);box.replaceChildren(c);
 }
 function sortCp(){
   const k=CP.sort,d=CP.dir,val=r=>k==='c'?(r.date||''):k==='mod'?(r.modified_at||''):k==='work'?wname(r.work_id):(r.copy||'');
   return [...S.cp].sort((a,b)=>{const x=val(a),y=val(b);return (x<y?-1:x>y?1:0)*d||(a.id<b.id?-1:1)});
 }
 function vCopy(){
-  const rows=sortCp(),st=CP.state,ar=k=>CP.sort===k?(CP.dir<0?' ▼':' ▲'):'';
+  const rows=sortCp(),st=CP.state,ar=k=>CP.sort===k?(CP.dir<0?' ▼':' ▲'):'',canOpen=typeof window.showDirectoryPicker==='function';
   const bar=`<div class="stick"><div class="bar"><b>원고 ${rows.length}개</b>
     <span class="hint" style="margin:0">${st==='ok'?'폴더: '+esc(CP.dirName):''}</span>
-    <button class="btn sm" data-cp="rescan">다시 읽기</button></div></div>`;
+    ${canOpen?'<button class="btn sm" data-cp="rescan">다시 읽기</button>':''}</div></div>`;
   const note=st==='scanning'?'<p class="hint">폴더를 읽는 중…</p>'
-    :st==='nohandle'?'<p class="hint">이 기기·브라우저에서는 tdtd의 저장 폴더를 읽을 수 없어요. 목록은 기록된 대로 보여요. (PC에서 tdtd에 폴더를 지정한 적이 있어야 본문을 볼 수 있어요)</p>'
+    :st==='nohandle'?(canOpen?'<p class="hint">tdtd의 저장 폴더를 찾지 못했어요. 이 브라우저에서 tdtd를 열어 저장 폴더를 지정한 적이 있어야 본문을 볼 수 있어요.</p>':'')
     :st==='perm'?`<p class="hint">폴더(${esc(CP.dirName)})를 읽으려면 허용이 필요해요.</p><button class="btn pri sm" data-cp="perm">폴더 접근 허용</button>`
     :st==='err'?`<p class="hint" style="color:var(--mg)">오류: ${esc(CP.msg)}</p>`:'';
   const body=rows.map(r=>{
     const nm=(r.copy||'(이름 없음)').replace(/\.md$/i,''),open=CP.open===r.id;
     const gone=CP.state==='ok'&&(!r.file_uid||!CP.files.has(r.file_uid.toLowerCase()));
-    return `<tr class="cprow${open?' open':''}" data-cp="row" data-id="${esc(r.id)}"><td class="num">${esc(r.date||'-')}</td><td class="num" title="${esc(r.modified_at||'')}">${esc(kstDate(r.modified_at)||'-')}</td><td>${esc(wname(r.work_id))}</td><td>${esc(nm)}${gone?' <span class="hint">(파일 없음)</span>':''}</td></tr>`
+    return `<tr class="cprow${open?' open':''}"${canOpen?` data-cp="row" data-id="${esc(r.id)}"`:''}><td class="num">${esc(r.date||'-')}</td><td class="num" title="${esc(r.modified_at||'')}">${esc(kstDate(r.modified_at)||'-')}</td><td title="${esc(wname(r.work_id))}">${esc(wname(r.work_id))}</td><td title="${esc(nm)}">${esc(nm)}${gone?' <span class="hint">(파일 없음)</span>':''}</td></tr>`
       +(open?'<tr class="pv"><td colspan="4"><div class="pvbox" id="pvbox">불러오는 중…</div></td></tr>':'');
   }).join('');
-  const table=rows.length?`<table class="cptb"><thead><tr><th data-cp="sort" data-k="c">생성일${ar('c')}</th><th data-cp="sort" data-k="mod">수정일${ar('mod')}</th><th data-cp="sort" data-k="work">작품${ar('work')}</th><th data-cp="sort" data-k="name">파일명${ar('name')}</th></tr></thead><tbody>${body}</tbody></table>`
+  const table=rows.length?`<table class="cptb${canOpen?'':' nopv'}"><colgroup><col style="width:92px"><col style="width:92px"><col style="width:32%"><col></colgroup><thead><tr><th data-cp="sort" data-k="c">생성일${ar('c')}</th><th data-cp="sort" data-k="mod">수정일${ar('mod')}</th><th data-cp="sort" data-k="work">작품${ar('work')}</th><th data-cp="sort" data-k="name">파일명${ar('name')}</th></tr></thead><tbody>${body}</tbody></table>`
     :'<p class="empty">아직 연결된 원고가 없어요.</p>';
   let un='';
   if(st==='ok'&&CP.un.length){
@@ -508,7 +525,7 @@ function render(){
   if(S.tab==='copy')cpAfter();
 }
 const flip=(set,k)=>set.has(k)?set.delete(k):set.add(k);
-document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(t){S.tab=t.dataset.tab;render();$('view').scrollTop=0;if(S.tab==='copy')copyScan(false)}});
+document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(t){S.tab=t.dataset.tab;render();$('view').scrollTop=0;if(S.tab==='copy'&&typeof window.showDirectoryPicker==='function')copyScan(false)}});
 $('view').addEventListener('click',e=>{
   const t=e.target.closest('[data-nav],[data-ws],[data-iv],[data-tg],[data-work],[data-inc],[data-act]');if(!t)return;
   const d=t.dataset;
