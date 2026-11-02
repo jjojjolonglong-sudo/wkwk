@@ -144,6 +144,21 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:90vw;background:var(--ink);color:#fff;padding:9px 14px;font-weight:700;z-index:99;opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
+/* 원고 탭 */
+.cptb{width:100%;border-collapse:collapse;font-size:14px}
+.cptb th{text-align:left;font-size:12px;color:var(--mute);padding:6px 8px;border-bottom:1.5px solid var(--ink);cursor:pointer;white-space:nowrap;user-select:none}
+.cptb td{padding:7px 8px;border-bottom:1px dashed var(--dash);vertical-align:top;word-break:break-word}
+.cptb td.num{white-space:nowrap;font-size:13px}
+.cprow{cursor:pointer}.cprow:hover td{background:#F1F5F8}.cprow.open td{background:var(--slip)}
+.cptb tr.pv>td{padding:0;border-bottom:1.5px solid var(--ink)}
+.pvbox{position:relative;height:150px;overflow:hidden;padding:8px 10px;background:#fff;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.pvbox.mute{color:var(--mute);font-size:13px}
+.pvbox.cut::after{content:'…';position:absolute;right:0;bottom:0;padding:0 8px;background:#fff;font-weight:800}
+.pvbox .memo{color:var(--mute);font-size:12px}.pvbox .memo::before{content:'※ '}
+.pvbox .lk{color:var(--mute)}
+.cpun{margin-top:22px;padding-top:12px;border-top:1.5px dashed var(--dash)}
+.cpf{display:flex;align-items:center;gap:6px;font-weight:400;font-size:14px;margin:4px 0}
+.cpf input{display:inline-block;width:auto;margin:0}
 </style>
 </head>
 <body>
@@ -257,7 +272,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 Media.init({worker:MEDIA_URL,getToken:async()=>(await sb.auth.getSession()).data.session?.access_token});
 
 /* ---------- 상태 ---------- */
-const S={works:[],ev:[],inc:[],tab:'main',sel:'all',iv:'month',ws:'pre',uid:null,oy:new Set(),om:new Set(),ow:null,inited:false};
+const S={works:[],ev:[],inc:[],cp:[],tab:'main',sel:'all',iv:'month',ws:'pre',uid:null,oy:new Set(),om:new Set(),ow:null,inited:false};
 const evOf=id=>S.ev.filter(e=>e.work_id===id);
 const ekey=e=>(e.end_date||e.start_date||(e.created_at||'').slice(0,10))+'|'+(e.created_at||'');
 const sortEv=a=>[...a].sort((x,y)=>ekey(x)<ekey(y)?1:-1);          // 최근 것이 앞
@@ -267,13 +282,14 @@ const pubDate=w=>evOf(w.id).filter(e=>e.type==='출간'&&e.start_date).map(e=>e.
 const wname=id=>(S.works.find(w=>w.id===id)||{}).name||'(삭제된 작품)';
 
 async function loadAll(){
-  const [a,b,c]=await Promise.all([
+  const [a,b,c,d]=await Promise.all([
     sb.from('wkwk_work').select('*').order('created_at',{ascending:false}),
     sb.from('wkwk_event').select('*'),
-    sb.from('wkwk_income').select('*')]);
-  const er=a.error||b.error||c.error;
+    sb.from('wkwk_income').select('*'),
+    sb.from('wkwk_copy').select('*')]);
+  const er=a.error||b.error||c.error||d.error;
   if(er){fail(er);return}
-  S.works=a.data;S.ev=b.data;S.inc=c.data;render();
+  S.works=a.data;S.ev=b.data;S.inc=c.data;S.cp=d.data||[];render();
 }
 
 /* ---------- 화면 ---------- */
@@ -309,10 +325,143 @@ function vWorks(){
     <button class="btn pri" data-act="addwork">+ 작품 추가</button></div></div>
     <div class="list">${list.length?list.map(card).join(''):'<p class="empty" style="grid-column:1/-1">이 단계의 작품이 없어요.</p>'}</div>`;
 }
-function vCopy(){
-  return `<div class="soon pt"><span class="stamp" style="--sc:#8a94a0">준비중</span>
-  <p class="hint" style="margin-top:16px">원고 탭은 아직 비워두었어요.<br>wkwk_copy 테이블(날짜, 파일 경로)은 만들어져 있어요.</p></div>`;
+/* ---------- 원고 탭: tdtd 폴더의 .md 파일을 읽어서 작품에 연결해 보여줘요 ----------
+   읽기 전용이에요. 파일에는 '연결할 때 첫 줄에 번호 한 줄(숨김 주석)'만 추가하고 본문은 건드리지 않아요.
+   tdtd와 같은 사이트라서 tdtd가 기억해 둔 저장 폴더를 그대로 빌려 써요(PC Chrome/Edge). */
+if(!window.kstDate)window.kstDate=d=>{const t=d==null?Date.now():new Date(d).getTime();return isNaN(t)?'':new Date(t+32400000).toISOString().slice(0,10)};
+const TAG=/^<!--wk:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?: c=(\S+?))?-->/i;
+const CP={sort:'mod',dir:-1,open:null,files:null,un:[],state:'idle',dirName:'',sel:new Set(),msg:'',cache:new Map()};
+function tdHandle(){return new Promise(res=>{let q;try{q=indexedDB.open('TdtdAppDB',1)}catch(e){return res(null)}
+  q.onupgradeneeded=()=>{try{q.transaction.abort()}catch(e){}};   // tdtd가 만든 적 없으면 새로 만들지 않고 없는 걸로 처리
+  q.onerror=()=>res(null);q.onblocked=()=>res(null);
+  q.onsuccess=()=>{try{const db=q.result,x=db.transaction('handles','readonly').objectStore('handles').get('savedDirHandle');
+    x.onsuccess=()=>{db.close();res(x.result||null)};x.onerror=()=>{db.close();res(null)}}catch(e){res(null)}}})}
+async function copyScan(ask){
+  if(CP.state==='scanning')return;
+  CP.state='scanning';CP.msg='';if(S.tab==='copy')render();
+  try{
+    const h=await tdHandle();
+    if(!h){CP.state='nohandle';return}
+    CP.dirName=h.name;CP.h=h;
+    let p=await h.queryPermission({mode:'readwrite'});
+    if(p!=='granted'&&ask)p=await h.requestPermission({mode:'readwrite'});
+    if(p!=='granted'){CP.state='perm';return}
+    const {data,error}=await sb.from('wkwk_copy').select('*');if(error)throw error;S.cp=data||[];
+    const files=new Map(),un=[];
+    for await(const fh of h.values()){
+      if(fh.kind!=='file'||!/\.md$/i.test(fh.name))continue;
+      const f=await fh.getFile(),m=TAG.exec(await f.slice(0,200).text());
+      const o={name:fh.name,mod:f.lastModified,size:f.size,fh};
+      if(m){o.uid=m[1].toLowerCase();o.c=m[2]||'';if(files.has(o.uid)){o.dup=true;un.push(o)}else files.set(o.uid,o)}
+      else un.push(o);
+    }
+    const known=new Set(S.cp.map(r=>(r.file_uid||'').toLowerCase()));
+    for(const [uid,o] of files)if(!known.has(uid))un.push(o);   // 번호는 있는데 아직 작품에 연결 안 된 파일
+    CP.files=files;CP.un=un.sort((x,y)=>y.mod-x.mod);CP.sel.clear();
+    const ups=[];   // 파일명·수정일이 바뀌었으면 기록만 맞춰요(파일 내용은 건드리지 않아요)
+    for(const r of S.cp){
+      if(!r.file_uid)continue;const f=files.get(r.file_uid.toLowerCase());if(!f)continue;
+      const patch={};if(r.copy!==f.name)patch.copy=f.name;
+      if(f.mod!==Number(r.file_mtime)){patch.file_mtime=f.mod;patch.modified_at=new Date(f.mod).toISOString()}
+      if(Object.keys(patch).length)ups.push(sb.from('wkwk_copy').update(patch).eq('id',r.id).then(({error})=>{if(!error)Object.assign(r,patch)}));
+    }
+    await Promise.all(ups);
+    CP.state='ok';
+  }catch(e){CP.state='err';CP.msg=e.message||String(e)}
+  finally{if(S.tab==='copy')render()}
 }
+async function cpBody(f){return (await (await f.fh.getFile()).text()).replace(TAG,'').replace(/^\r?\n/,'')}
+function cleanHtml(html){   // tdtd와 같은 규칙: 문단·줄바꿈·굵게/기울임/밑줄·정렬만 남기고 나머지는 걸러요
+  const d=new DOMParser().parseFromString(html,'text/html'),out=document.createElement('div'),OK=['DIV','P','BR','SPAN','B','I','U','STRONG','EM'];
+  (function walk(n,dst){for(const c of n.childNodes){
+    if(c.nodeType===3){dst.append(c.nodeValue);continue}
+    if(c.nodeType!==1)continue;const t=c.tagName;
+    if(t==='SCRIPT'||t==='STYLE')continue;
+    if(!OK.includes(t)){walk(c,dst);continue}
+    const e=document.createElement(t.toLowerCase());
+    if(c.classList.contains('memo')||c.classList.contains('para-memo'))e.className='memo';
+    else if(c.classList.contains('lk')||c.classList.contains('locked-paragraph'))e.className='lk';
+    const a=/text-align:\s*(left|right|center|justify)/.exec(c.getAttribute('style')||'');if(a)e.style.textAlign=a[1];
+    if(t!=='BR')walk(c,e);dst.append(e)}})(d.body,out);
+  return out}
+async function cpAfter(){   // 열린 행 아래 칸에 본문을 채움
+  if(!CP.open)return;const r=S.cp.find(x=>x.id===CP.open);let box=$('pvbox');if(!r||!box)return;
+  const f=CP.files&&r.file_uid&&CP.files.get(r.file_uid.toLowerCase());
+  if(!f){box.classList.add('mute');box.textContent=CP.state==='ok'?'폴더에서 이 파일을 찾을 수 없어요. 파일이 옮겨졌거나 지워졌을 수 있어요.':CP.state==='scanning'?'불러오는 중…':'이 기기에서는 원본 폴더를 읽을 수 없어서 본문을 볼 수 없어요.';return}
+  try{
+    const key=f.uid+'|'+f.mod;let node=CP.cache.get(key);
+    if(!node){node=cleanHtml(await cpBody(f));CP.cache.set(key,node)}
+    box=$('pvbox');if(!box||CP.open!==r.id)return;   // 그새 다른 행을 눌렀으면 그만
+    box.replaceChildren(node.cloneNode(true));
+    if(box.scrollHeight>box.clientHeight+2)box.classList.add('cut');
+  }catch(e){box=$('pvbox');if(box){box.classList.add('mute');box.textContent='파일을 읽지 못했어요: '+e.message}}
+}
+function sortCp(){
+  const k=CP.sort,d=CP.dir,val=r=>k==='c'?(r.date||''):k==='mod'?(r.modified_at||''):k==='work'?wname(r.work_id):(r.copy||'');
+  return [...S.cp].sort((a,b)=>{const x=val(a),y=val(b);return (x<y?-1:x>y?1:0)*d||(a.id<b.id?-1:1)});
+}
+function vCopy(){
+  const rows=sortCp(),st=CP.state,ar=k=>CP.sort===k?(CP.dir<0?' ▼':' ▲'):'';
+  const bar=`<div class="stick"><div class="bar"><b>원고 ${rows.length}개</b>
+    <span class="hint" style="margin:0">${st==='ok'?'폴더: '+esc(CP.dirName):''}</span>
+    <button class="btn sm" data-cp="rescan">다시 읽기</button></div></div>`;
+  const note=st==='scanning'?'<p class="hint">폴더를 읽는 중…</p>'
+    :st==='nohandle'?'<p class="hint">이 기기·브라우저에서는 tdtd의 저장 폴더를 읽을 수 없어요. 목록은 기록된 대로 보여요. (PC에서 tdtd에 폴더를 지정한 적이 있어야 본문을 볼 수 있어요)</p>'
+    :st==='perm'?`<p class="hint">폴더(${esc(CP.dirName)})를 읽으려면 허용이 필요해요.</p><button class="btn pri sm" data-cp="perm">폴더 접근 허용</button>`
+    :st==='err'?`<p class="hint" style="color:var(--mg)">오류: ${esc(CP.msg)}</p>`:'';
+  const body=rows.map(r=>{
+    const nm=(r.copy||'(이름 없음)').replace(/\.md$/i,''),open=CP.open===r.id;
+    const gone=CP.state==='ok'&&(!r.file_uid||!CP.files.has(r.file_uid.toLowerCase()));
+    return `<tr class="cprow${open?' open':''}" data-cp="row" data-id="${esc(r.id)}"><td class="num">${esc(r.date||'-')}</td><td class="num" title="${esc(r.modified_at||'')}">${esc(kstDate(r.modified_at)||'-')}</td><td>${esc(wname(r.work_id))}</td><td>${esc(nm)}${gone?' <span class="hint">(파일 없음)</span>':''}</td></tr>`
+      +(open?'<tr class="pv"><td colspan="4"><div class="pvbox" id="pvbox">불러오는 중…</div></td></tr>':'');
+  }).join('');
+  const table=rows.length?`<table class="cptb"><thead><tr><th data-cp="sort" data-k="c">생성일${ar('c')}</th><th data-cp="sort" data-k="mod">수정일${ar('mod')}</th><th data-cp="sort" data-k="work">작품${ar('work')}</th><th data-cp="sort" data-k="name">파일명${ar('name')}</th></tr></thead><tbody>${body}</tbody></table>`
+    :'<p class="empty">아직 연결된 원고가 없어요.</p>';
+  let un='';
+  if(st==='ok'&&CP.un.length){
+    un=`<div class="cpun"><div class="bar"><b>연결 안 된 파일 ${CP.un.length}개</b><button class="btn sm" data-cp="unall">전체 선택</button></div>
+    <p class="hint">작품을 고르고 연결하면 파일 맨 첫 줄에 번호 한 줄(숨김 주석)만 추가돼요. 본문은 바뀌지 않아요. 번호가 이미 있는 파일은 파일을 건드리지 않고 기록만 해요. 기존 파일은 처음 한 번 폴더를 복사해 두고 시작하세요.</p>
+    ${CP.un.map((o,i)=>`<label class="cpf"><input type="checkbox" data-cp="chk" data-i="${i}"${CP.sel.has(i)?' checked':''}>${esc(o.name.replace(/\.md$/i,''))}<span class="hint" style="margin:0">· 수정 ${esc(kstDate(o.mod))}${o.uid?(o.dup?' · 번호 중복(복사본일 수 있어요)':' · 번호 있음'):''}</span></label>`).join('')}
+    <div class="two" style="margin-top:8px"><select id="cp-work">${S.works.map(w=>`<option value="${esc(w.id)}">${esc(w.name)}</option>`).join('')}</select><button class="btn pri" data-cp="link">선택한 파일 연결</button></div></div>`;
+  }
+  return bar+note+table+un;
+}
+async function cpLink(){
+  const wid=$('cp-work')&&$('cp-work').value,items=[...CP.sel].map(i=>CP.un[i]).filter(Boolean);
+  if(!wid||!items.length)return toast('작품과 파일을 골라 주세요');
+  if(items.some(x=>x.dup))return toast('번호가 중복된 파일은 연결할 수 없어요. 복사본이라면 지우거나 이름만 바꿔 쓰세요');
+  const need=items.filter(x=>!x.uid).length;
+  if(need&&!confirm(`${need}개 파일의 맨 첫 줄에 번호 한 줄을 추가해요. 본문은 바뀌지 않아요.\n폴더를 복사해 두셨나요?`))return;
+  const rows=[],fails=[];
+  for(const it of items){
+    try{
+      let uid=it.uid,c=it.c,mtime=it.mod,orig=it.mod;
+      if(!uid){
+        const txt=await (await it.fh.getFile()).text();
+        if(TAG.test(txt.slice(0,200)))throw new Error('그새 번호가 생겼어요. 다시 읽기를 눌러 주세요');
+        uid=crypto.randomUUID();c=new Date(orig).toISOString();   // 생성일은 알 수 없어서 마지막 수정일로 대신 기록해요
+        const out='<!--wk:'+uid+' c='+c+'-->\n'+txt;
+        const wr=await it.fh.createWritable();await wr.write(out);await wr.close();
+        const f2=await it.fh.getFile();
+        if(await f2.text()!==out)throw new Error('저장 확인에 실패했어요(파일은 확인이 필요해요)');
+        mtime=f2.lastModified;   // 번호를 붙이느라 바뀐 수정 시각. 화면의 수정일은 원래 수정일(orig)로 둬요
+      }
+      rows.push({user_id:S.uid,work_id:wid,file_uid:uid,copy:it.name,date:kstDate(c)||null,modified_at:new Date(orig).toISOString(),file_mtime:mtime});
+    }catch(e){fails.push(it.name+': '+e.message)}
+  }
+  if(rows.length){const {error}=await sb.from('wkwk_copy').insert(rows);if(error){fails.push('기록 저장 실패: '+error.message)}}
+  toast(fails.length?`연결 ${rows.length}개, 실패 ${fails.length}개 — ${fails[0]}`:`${rows.length}개를 연결했어요`);
+  await copyScan(false);
+}
+$('view').addEventListener('click',e=>{
+  const b=e.target.closest('[data-cp]');if(!b||S.tab!=='copy')return;const a=b.dataset.cp;
+  if(a==='row'){CP.open=CP.open===b.dataset.id?null:b.dataset.id;render()}
+  else if(a==='sort'){const k=b.dataset.k;if(CP.sort===k)CP.dir=-CP.dir;else{CP.sort=k;CP.dir=(k==='c'||k==='mod')?-1:1}CP.open=null;render()}
+  else if(a==='rescan'||a==='perm')copyScan(true);
+  else if(a==='chk'){const i=+b.dataset.i;b.checked?CP.sel.add(i):CP.sel.delete(i)}
+  else if(a==='unall'){CP.un.forEach((o,i)=>{if(!o.dup)CP.sel.add(i)});render()}
+  else if(a==='link')cpLink();
+});
 const sums=rs=>[rs.reduce((a,i)=>a+(i.sell||0),0),rs.reduce((a,i)=>a+(i.income||0),0)];
 const arow=(cls,tg,lv,open,label,sell,inc,star)=>`<div class="cols ar ${cls}" data-tg="${tg}" tabindex="0" role="button" aria-expanded="${open}" style="--lv:${lv}"><span class="lb" title="${label}">${open?'▾':'▸'} ${label}</span><span class="n">${sell}</span><span class="n">${inc}</span><span class="n">${star}</span></div>`;
 const lrow=(i,lv,label)=>`<div class="cols leaf" data-inc="${i.id}" tabindex="0" role="button" style="--lv:${lv}"><span class="lb" title="${label}">${label}</span><span class="n">${fmtN(i.sell)}</span><span class="n">${fmtW(i.income)}</span><span class="n">${fmtN(i.star)}</span></div>`;
@@ -356,9 +505,10 @@ function render(){
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.tab===S.tab)));
   v.innerHTML=({main:vMain,works:vWorks,copy:vCopy,inc:vInc})[S.tab]();
   v.scrollTop=top;
+  if(S.tab==='copy')cpAfter();
 }
 const flip=(set,k)=>set.has(k)?set.delete(k):set.add(k);
-document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(t){S.tab=t.dataset.tab;render();$('view').scrollTop=0}});
+document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(t){S.tab=t.dataset.tab;render();$('view').scrollTop=0;if(S.tab==='copy')copyScan(false)}});
 $('view').addEventListener('click',e=>{
   const t=e.target.closest('[data-nav],[data-ws],[data-iv],[data-tg],[data-work],[data-inc],[data-act]');if(!t)return;
   const d=t.dataset;
@@ -535,7 +685,7 @@ $('go').onclick=async()=>{
   if(!fail(error))boot();
 };
 $('pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('go').click()});
-$('out').onclick=async()=>{await sb.auth.signOut();S.works=[];S.ev=[];S.inc=[];boot()};
+$('out').onclick=async()=>{await sb.auth.signOut();S.works=[];S.ev=[];S.inc=[];S.cp=[];boot()};
 
 /* ---------- 앱 설치 (PC·모바일 공통) ---------- */
 let dp=null;
