@@ -155,7 +155,6 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
 .cptb tr.pv>td{padding:0;border-bottom:1.5px solid var(--ink)}
 .pvbox{position:relative;height:150px;overflow:hidden;padding:8px 10px;background:#fff;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
 .pvbox.mute{color:var(--mute);font-size:13px}
-.pvbox .memo{color:var(--mute);font-size:12px}.pvbox .memo::before{content:'※ '}
 .pvbox .lk{color:var(--mute)}
 .cpun{margin-top:22px;padding-top:12px;border-top:1.5px dashed var(--dash)}
 .cpf{display:flex;align-items:center;gap:6px;font-weight:400;font-size:14px;margin:4px 0}
@@ -379,9 +378,9 @@ function cleanHtml(html){   // tdtd와 같은 규칙: 문단·줄바꿈·굵게/
     if(c.nodeType!==1)continue;const t=c.tagName;
     if(t==='SCRIPT'||t==='STYLE')continue;
     if(!OK.includes(t)){walk(c,dst);continue}
+    if(c.classList.contains('memo')||c.classList.contains('para-memo'))continue;   // 메모는 미리보기에서 뺌
     const e=document.createElement(t.toLowerCase());
-    if(c.classList.contains('memo')||c.classList.contains('para-memo'))e.className='memo';
-    else if(c.classList.contains('lk')||c.classList.contains('locked-paragraph'))e.className='lk';
+    if(c.classList.contains('lk')||c.classList.contains('locked-paragraph'))e.className='lk';
     const a=/text-align:\s*(left|right|center|justify)/.exec(c.getAttribute('style')||'');if(a)e.style.textAlign=a[1];
     if(t!=='BR')walk(c,e);dst.append(e)}})(d.body,out);
   return out}
