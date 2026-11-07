@@ -34,15 +34,19 @@ body{
 .num{font-family:'Courier New','D2Coding',monospace;font-variant-numeric:tabular-nums}
 
 /* 한쪽(오른쪽 위) 귀퉁이만 자른 네모.
-   clip-path 로 귀퉁이를 자르고, 테두리색 바탕(border-box) 위에 안쪽 채움(padding-box)을 같은 각도로 잘라 얹어서
-   잘린 변의 선도 테두리와 같은 두께(1.5px)로 이어지게 해요. --c 가 자르는 크기 */
+   clip-path로 귀퉁이를 자르고, 잘린 사선은 ::after의 얇은 막대를 45° 돌려서 그려요.
+   막대 굵기 --bw 는 실제로 화면에 그려진 테두리 굵기(배율마다 다름)를 JS가 재서 넣어요 → 사선과 다른 변의 굵기가 같아요. --c 가 자르는 크기 */
 .btn,.chip,.card,.sheet,dialog,.slip,.stamp,#login,.logo,.tab{
   --c:9px; --bgc:#fff; --lc:var(--ink);
-  border-color:transparent!important;
   clip-path:polygon(0 0,calc(100% - var(--c)) 0,100% var(--c),100% 100%,0 100%);
-  background:
-    linear-gradient(225deg,transparent calc(var(--c)*.7071 + .15px),var(--bgc) 0) padding-box,   /* 잘린 변의 선을 테두리보다 조금 굵게: 화면 배율(125%·150%)에서 테두리가 얇게 그려져도 사선이 사라지지 않게 */
-    linear-gradient(var(--lc),var(--lc)) border-box;
+  background:var(--bgc);
+}
+.btn,.chip,.card,.slip,.stamp,#login,.logo,.tab{position:relative}
+.btn::after,.chip::after,.card::after,.sheet::after,dialog::after,.slip::after,.stamp::after,#login::after,.logo::after,.tab::after{
+  content:"";position:absolute;pointer-events:none;z-index:9;
+  left:calc(100% - var(--c) + var(--bw,1.5px) - 1px);top:calc(-1 * var(--bw,1.5px));
+  width:calc(var(--c) * 1.41421 + 2px);height:var(--bw,1.5px);background:var(--lc);
+  transform-origin:1px 0;transform:rotate(45deg);
 }
 
 /* 전체 틀: 가로·세로 최대치가 있고, 머리글+탭은 고정, 그 아래만 스크롤 */
@@ -50,10 +54,11 @@ body{
 .top{flex:none;display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .logo{--c:7px;--bgc:var(--ye);margin:0;font-family:'Courier New',monospace;font-size:22px;font-weight:800;letter-spacing:-.02em;border:1.5px solid var(--ink);padding:0 10px}
 .sub{font-weight:700;font-size:13px;flex:1}
-.tabs{flex:none;display:flex;gap:4px;padding-left:8px;margin-bottom:-1.5px;position:relative;z-index:2}
-.tab{--c:8px;--bgc:#CFE0EA;font:inherit;font-weight:700;padding:6px 14px 5px;margin-top:8px;border:1.5px solid var(--ink);color:var(--ink);cursor:pointer}   /* 아래 선이 내용 상자의 윗선과 겹쳐요 */
-.tab[aria-selected=true]{--bgc:var(--ye);margin-top:0;padding-top:12px;border-bottom:0;padding-bottom:6.5px}   /* 고른 탭만 아래 선이 없어서 내용 상자와 이어져요 */
-.sheet{--c:18px;position:relative;z-index:1;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;border:1.5px solid var(--ink);padding:0}
+.tabs{flex:none;display:flex;gap:4px;padding-left:8px;margin-bottom:calc(-1 * var(--bw,1.5px))}   /* 탭 아래쪽이 내용 상자 윗선과 겹쳐요 */
+/* 겹치는 순서: 고른 탭(맨 앞, 상자 윗선을 덮어 이어짐) > 내용 상자 > 다른 탭(맨 뒤, 아래쪽이 상자 윗선에 가려 일자로 보임) */
+.tab{--c:8px;--bgc:#CFE0EA;z-index:1;font:inherit;font-weight:700;padding:6px 14px 5px;margin-top:8px;border:1.5px solid var(--ink);border-bottom:0;color:var(--ink);cursor:pointer}
+.tab[aria-selected=true]{--bgc:var(--ye);z-index:3;margin-top:0;padding-top:12px}
+.sheet{--c:18px;position:relative;z-index:2;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;border:1.5px solid var(--ink);padding:0}
 /* 위쪽(작품 추가·기록 추가 줄)은 고정, 그 아래만 스크롤 → 잘린 모서리와 스크롤바가 겹치지 않아요 */
 .sh{flex:none;min-height:18px;padding:0 10px}.scr{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 10px 20px}
 .sh:empty+.scr>.pt:first-child{padding-top:0}
@@ -138,7 +143,8 @@ textarea{resize:vertical;line-height:1.5}
 .soon .stamp{font-size:20px;padding:2px 16px}
 
 /* 대화상자 */
-dialog{--c:18px;width:min(94vw,460px);max-height:92vh;overflow:auto;padding:16px;border:1.5px solid var(--ink);color:var(--ink)}
+dialog{--c:18px;width:min(94vw,460px);max-height:92vh;overflow:hidden;padding:0;border:1.5px solid var(--ink);color:var(--ink)}
+dialog[open]{display:flex;flex-direction:column}.db{min-height:0;overflow:auto;padding:16px}
 dialog::backdrop{background:rgba(27,32,48,.5)}
 dialog h2{margin:0 0 4px;font-size:18px}
 dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);padding-bottom:3px}
@@ -198,7 +204,7 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
 </div>
 
 <!-- 작품 -->
-<dialog id="wd">
+<dialog id="wd"><div class="db">
   <h2 id="wd-t">작품</h2>
   <!-- 상세 보기 -->
   <section id="wv"></section>
@@ -244,10 +250,10 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
   </div>
   <p class="hint" id="w-pubnote" hidden>출간된 작품은 삭제할 수 없어요.</p>
   </section>
-</dialog>
+</div></dialog>
 
 <!-- 수입 -->
-<dialog id="ind">
+<dialog id="ind"><div class="db">
   <h2 id="in-t">수입 기록</h2>
   <label>작품<select id="i-work"></select></label>
   <label>기간 (연월)<input id="i-span" type="month" min="1900-01" max="2099-12"></label>
@@ -261,7 +267,7 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
     <button class="btn" id="i-close" type="button">닫기</button>
     <button class="btn dng" id="i-del" type="button" hidden>삭제</button>
   </div>
-</dialog>
+</div></dialog>
 
 <div id="toast" role="status"></div>
 
@@ -279,6 +285,10 @@ if(!window.Media){
 }
 
 const $=id=>document.getElementById(id);
+/* 테두리 1.5px가 이 화면 배율에서 실제로 몇 px로 그려지는지 재서 사선 굵기(--bw)로 써요 */
+function measureBw(){const t=document.createElement('div');t.style.cssText='position:absolute;visibility:hidden;border-top:1.5px solid;width:0';document.body.appendChild(t);
+  const w=parseFloat(getComputedStyle(t).borderTopWidth)||1.5;t.remove();document.documentElement.style.setProperty('--bw',w+'px')}
+measureBw();addEventListener('resize',measureBw);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtW=n=>n==null?'-':'₩'+Number(n).toLocaleString('ko-KR');
 const fmtN=n=>n==null?'-':Number(n).toLocaleString('ko-KR');
