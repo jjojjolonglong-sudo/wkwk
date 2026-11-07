@@ -165,9 +165,9 @@ textarea{resize:vertical;line-height:1.5}
 .pvbox{position:relative;height:150px;overflow:hidden;padding:8px 10px;background:#fff;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
 .pvbox.mute{color:var(--mute);font-size:13px}
 .pvbox .lk{color:var(--mute)}
-.cptb td.rfc{padding:4px 2px 4px 0;text-align:right;white-space:nowrap}.rf svg{display:block;width:14px;height:14px;margin:2px 0}
+.cptb td.rfc{padding:4px 2px 4px 0;text-align:right;white-space:nowrap}.rf svg{display:block;width:15px;height:15px}
 .full{padding:4px 2px 0;font-size:15px;line-height:1.8;white-space:pre-wrap;word-break:break-word}.full.mute{color:var(--mute);font-size:13px}.full .lk{color:var(--mute)}
-.rdh{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.btn.rf{border:0;--bgc:transparent;padding:1px 8px;line-height:1.4;color:var(--mute)}.btn.rf:hover:not(:disabled){--bgc:#E3EBF1;color:var(--ink)}.rf[disabled]{opacity:.5;cursor:wait}
+.rdh{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.btn.rf{border:0;--bgc:transparent;padding:0;width:26px;height:24px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;line-height:1;color:var(--mute)}   /* 원고 아이콘 버튼: 모두 같은 크기·가운데 정렬 */.btn.rf:hover:not(:disabled){--bgc:#E3EBF1;color:var(--ink)}.rf[disabled]{opacity:.5;cursor:wait}
 .cpun{margin-top:22px;padding-top:12px;border-top:1.5px dashed var(--dash)}
 .cpf{display:flex;align-items:center;gap:6px;font-weight:400;font-size:14px;margin:4px 0}
 .cpf input{display:inline-block;width:auto;margin:0}
@@ -463,7 +463,8 @@ function sortCp(){
   const k=CP.sort,d=CP.dir,val=r=>k==='c'?(r.date||''):k==='mod'?(r.modified_at||''):k==='work'?wname(r.work_id):(r.copy||'');
   return [...S.cp].sort((a,b)=>{const x=val(a),y=val(b);return (x<y?-1:x>y?1:0)*d||(a.id<b.id?-1:1)});
 }
-const FULLICON='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>';
+const REICON='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M12.5 1.8v2.8H9.7"/></svg>';
+const FULLICON='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10"/></svg>';
 /* 전체 보기: 목록 대신 상자 안에 원고 전체를 보여줘요. '‹ 목록'으로 돌아가면 보던 목록 위치 그대로 */
 function vFull(){
   const r=S.cp.find(x=>x.id===CP.full);if(!r){CP.full=null;return vCopy()}
@@ -482,7 +483,7 @@ function vCopy(){
   if(CP.full)return vFull();
   const rows=sortCp(),st=CP.state,ar=k=>CP.sort===k?(CP.dir<0?' ▼':' ▲'):'',canOpen=typeof window.showDirectoryPicker==='function';
   const bar=`<div class="stick"><div class="bar l"><b>원고 ${rows.length}개</b>
-    ${canOpen?'<button class="btn sm rf" data-cp="rescan" title="폴더 전체 다시 읽기">↻</button>':''}
+    ${canOpen?'<button class="btn sm rf" data-cp="rescan" title="폴더 전체 다시 읽기">'+REICON+'</button>':''}
     <span class="hint" style="margin:0">${st==='ok'?'폴더: '+esc(CP.dirName):''}</span></div></div>`;
   const note=st==='scanning'?'<p class="hint">폴더를 읽는 중…</p>'
     :st==='nohandle'?(canOpen?'<p class="hint">tdtd의 저장 폴더를 찾지 못했어요. 이 브라우저에서 tdtd를 열어 저장 폴더를 지정한 적이 있어야 본문을 볼 수 있어요.</p>':'')
@@ -491,7 +492,7 @@ function vCopy(){
   const body=rows.map(r=>{
     const nm=(r.copy||'(이름 없음)').replace(/\.md$/i,''),open=CP.open===r.id;
     const gone=CP.state==='ok'&&(!r.file_uid||!CP.files.has(r.file_uid.toLowerCase()));
-    return `<tr class="cprow${open?' open':''}"${canOpen?` data-cp="row" data-id="${esc(r.id)}"`:''}><td class="num">${esc(r.date||'-')}</td><td class="num" title="${esc(r.modified_at||'')}">${esc(kstDate(r.modified_at)||'-')}</td><td title="${esc(wname(r.work_id))}">${esc(wname(r.work_id))}</td><td title="${esc(nm)}">${esc(nm)}${gone?' <span class="hint">(파일 없음)</span>':''}</td>${canOpen?`<td class="rfc"><button class="btn sm rf" data-cp="full" data-id="${esc(r.id)}" title="전체 보기">${FULLICON}</button><button class="btn sm rf" data-cp="rf" data-id="${esc(r.id)}" title="이 원고만 다시 읽기">↻</button></td>`:''}</tr>`
+    return `<tr class="cprow${open?' open':''}"${canOpen?` data-cp="row" data-id="${esc(r.id)}"`:''}><td class="num">${esc(r.date||'-')}</td><td class="num" title="${esc(r.modified_at||'')}">${esc(kstDate(r.modified_at)||'-')}</td><td title="${esc(wname(r.work_id))}">${esc(wname(r.work_id))}</td><td title="${esc(nm)}">${esc(nm)}${gone?' <span class="hint">(파일 없음)</span>':''}</td>${canOpen?`<td class="rfc"><button class="btn sm rf" data-cp="full" data-id="${esc(r.id)}" title="전체 보기">${FULLICON}</button><button class="btn sm rf" data-cp="rf" data-id="${esc(r.id)}" title="이 원고만 다시 읽기">${REICON}</button></td>`:''}</tr>`
       +(open?`<tr class="pv"><td colspan="${canOpen?5:4}">`+'<div class="pvbox" id="pvbox">불러오는 중…</div></td></tr>':'');
   }).join('');
   const table=rows.length?`<table class="cptb${canOpen?'':' nopv'}"><colgroup><col style="width:92px"><col style="width:92px"><col style="width:22%"><col>${canOpen?'<col style="width:68px">':''}</colgroup><thead><tr><th data-cp="sort" data-k="c">생성일${ar('c')}</th><th data-cp="sort" data-k="mod">수정일${ar('mod')}</th><th data-cp="sort" data-k="work">작품${ar('work')}</th><th data-cp="sort" data-k="name">파일명${ar('name')}</th>${canOpen?'<th title="원고별 다시 읽기"></th>':''}</tr></thead><tbody>${body}</tbody></table>`
