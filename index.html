@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>wkwk 작업노트</title>
+<script src="https://jjojjolonglong-sudo.github.io/mnmn/fonts.v1.js" data-app="wkwk"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#FFE600">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -13,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="wkwk">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://jjojjolonglong-sudo.github.io/mnmn/config.js"></script>
-<script src="https://jjojjolonglong-sudo.github.io/mnmn/media.v1.js"></script>
+<script src="https://jjojjolonglong-sudo.github.io/mnmn/media.v2.js"></script>
 <style>
 /* 콘셉트: 오피스풍 교정쇄. 원고지 격자 위의 종이, 한쪽 귀퉁이를 자른 네모, 영수증 */
 :root{
@@ -156,6 +157,7 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
 .pvbox{position:relative;height:150px;overflow:hidden;padding:8px 10px;background:#fff;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
 .pvbox.mute{color:var(--mute);font-size:13px}
 .pvbox .lk{color:var(--mute)}
+.cptb td.rfc{padding:4px 4px 4px 0;text-align:right}.rf{padding:1px 8px;line-height:1.4}.rf[disabled]{opacity:.5;cursor:wait}
 .cpun{margin-top:22px;padding-top:12px;border-top:1.5px dashed var(--dash)}
 .cpf{display:flex;align-items:center;gap:6px;font-weight:400;font-size:14px;margin:4px 0}
 .cpf input{display:inline-block;width:auto;margin:0}
@@ -269,7 +271,7 @@ function fail(e){if(!e)return false;toast(e.message||String(e));return true}
 
 if(!window.supabase){document.body.innerHTML='<p style="padding:20px">Supabase 라이브러리를 불러오지 못했어요. 네트워크를 확인하고 새로고침해 주세요.</p>';throw new Error('no supabase')}
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-Media.init({worker:MEDIA_URL,getToken:async()=>(await sb.auth.getSession()).data.session?.access_token});
+Media.init({app:'wkwk',worker:MEDIA_URL,getToken:async()=>(await sb.auth.getSession()).data.session?.access_token});
 
 /* ---------- 상태 ---------- */
 const S={works:[],ev:[],inc:[],cp:[],tab:'main',sel:'all',iv:'month',ws:'pre',uid:null,oy:new Set(),om:new Set(),ow:null,inited:false};
@@ -428,10 +430,10 @@ function vCopy(){
   const body=rows.map(r=>{
     const nm=(r.copy||'(이름 없음)').replace(/\.md$/i,''),open=CP.open===r.id;
     const gone=CP.state==='ok'&&(!r.file_uid||!CP.files.has(r.file_uid.toLowerCase()));
-    return `<tr class="cprow${open?' open':''}"${canOpen?` data-cp="row" data-id="${esc(r.id)}"`:''}><td class="num">${esc(r.date||'-')}</td><td class="num" title="${esc(r.modified_at||'')}">${esc(kstDate(r.modified_at)||'-')}</td><td title="${esc(wname(r.work_id))}">${esc(wname(r.work_id))}</td><td title="${esc(nm)}">${esc(nm)}${gone?' <span class="hint">(파일 없음)</span>':''}</td></tr>`
-      +(open?'<tr class="pv"><td colspan="4"><div class="pvbox" id="pvbox">불러오는 중…</div></td></tr>':'');
+    return `<tr class="cprow${open?' open':''}"${canOpen?` data-cp="row" data-id="${esc(r.id)}"`:''}><td class="num">${esc(r.date||'-')}</td><td class="num" title="${esc(r.modified_at||'')}">${esc(kstDate(r.modified_at)||'-')}</td><td title="${esc(wname(r.work_id))}">${esc(wname(r.work_id))}</td><td title="${esc(nm)}">${esc(nm)}${gone?' <span class="hint">(파일 없음)</span>':''}</td>${canOpen?`<td class="rfc"><button class="btn sm rf" data-cp="rf" data-id="${esc(r.id)}" title="이 원고만 다시 읽기">↻</button></td>`:''}</tr>`
+      +(open?`<tr class="pv"><td colspan="${canOpen?5:4}">`+'<div class="pvbox" id="pvbox">불러오는 중…</div></td></tr>':'');
   }).join('');
-  const table=rows.length?`<table class="cptb${canOpen?'':' nopv'}"><colgroup><col style="width:92px"><col style="width:92px"><col style="width:32%"><col></colgroup><thead><tr><th data-cp="sort" data-k="c">생성일${ar('c')}</th><th data-cp="sort" data-k="mod">수정일${ar('mod')}</th><th data-cp="sort" data-k="work">작품${ar('work')}</th><th data-cp="sort" data-k="name">파일명${ar('name')}</th></tr></thead><tbody>${body}</tbody></table>`
+  const table=rows.length?`<table class="cptb${canOpen?'':' nopv'}"><colgroup><col style="width:92px"><col style="width:92px"><col style="width:32%"><col>${canOpen?'<col style="width:44px">':''}</colgroup><thead><tr><th data-cp="sort" data-k="c">생성일${ar('c')}</th><th data-cp="sort" data-k="mod">수정일${ar('mod')}</th><th data-cp="sort" data-k="work">작품${ar('work')}</th><th data-cp="sort" data-k="name">파일명${ar('name')}</th>${canOpen?'<th title="원고별 다시 읽기"></th>':''}</tr></thead><tbody>${body}</tbody></table>`
     :'<p class="empty">아직 연결된 원고가 없어요.</p>';
   let un='';
   if(st==='ok'&&CP.un.length){
@@ -441,6 +443,33 @@ function vCopy(){
     <div class="two" style="margin-top:8px"><select id="cp-work">${S.works.map(w=>`<option value="${esc(w.id)}">${esc(w.name)}</option>`).join('')}</select><button class="btn pri" data-cp="link">선택한 파일 연결</button></div></div>`;
   }
   return bar+note+table+un;
+}
+/* 원고 한 줄만 다시 읽기: 그 파일의 이름·수정일을 기록에 맞추고, 미리보기도 새 내용으로 */
+async function cpRefresh(btn){
+  const r=S.cp.find(x=>x.id===btn.dataset.id);if(!r)return;
+  if(CP.state!=='ok'||!CP.h||!CP.files)return copyScan(true);   // 폴더를 아직 못 읽었으면 전체 읽기부터
+  const uid=(r.file_uid||'').toLowerCase();if(!uid)return toast('이 원고는 파일 번호가 없어요');
+  btn.disabled=true;btn.textContent='…';
+  try{
+    let f=CP.files.get(uid),file=null;
+    if(f)try{file=await f.fh.getFile();if(TAG.exec(await file.slice(0,200).text())?.[1].toLowerCase()!==uid)file=null}catch(e){file=null}
+    if(!file){   // 이름이 바뀌었거나 옮겨졌으면 폴더에서 같은 번호를 찾아요
+      f=null;
+      for await(const fh of CP.h.values()){
+        if(fh.kind!=='file'||!/\.md$/i.test(fh.name))continue;
+        const ff=await fh.getFile(),m=TAG.exec(await ff.slice(0,200).text());
+        if(m&&m[1].toLowerCase()===uid){f={name:fh.name,fh,uid,c:m[2]||''};file=ff;break}
+      }
+      if(!f){CP.files.delete(uid);toast('폴더에서 이 파일을 찾을 수 없어요');return}
+      CP.files.set(uid,f);
+    }
+    f.name=file.name;f.mod=file.lastModified;f.size=file.size;
+    const patch={};if(r.copy!==f.name)patch.copy=f.name;
+    if(f.mod!==Number(r.file_mtime)){patch.file_mtime=f.mod;patch.modified_at=new Date(f.mod).toISOString()}
+    if(Object.keys(patch).length){const {error}=await sb.from('wkwk_copy').update(patch).eq('id',r.id);if(error)throw error;Object.assign(r,patch)}
+    toast(Object.keys(patch).length?'새로 읽었어요 · 바뀐 내용을 반영했어요':'새로 읽었어요 · 바뀐 게 없어요');
+  }catch(e){toast('다시 읽지 못했어요: '+(e.message||e))}
+  finally{if(S.tab==='copy')render()}
 }
 async function cpLink(){
   const wid=$('cp-work')&&$('cp-work').value,items=[...CP.sel].map(i=>CP.un[i]).filter(Boolean);
@@ -474,6 +503,7 @@ $('view').addEventListener('click',e=>{
   if(a==='row'){CP.open=CP.open===b.dataset.id?null:b.dataset.id;render()}
   else if(a==='sort'){const k=b.dataset.k;if(CP.sort===k)CP.dir=-CP.dir;else{CP.sort=k;CP.dir=(k==='c'||k==='mod')?-1:1}CP.open=null;render()}
   else if(a==='rescan'||a==='perm')copyScan(true);
+  else if(a==='rf')cpRefresh(b);
   else if(a==='chk'){const i=+b.dataset.i;b.checked?CP.sel.add(i):CP.sel.delete(i)}
   else if(a==='unall'){CP.un.forEach((o,i)=>{if(!o.dup)CP.sel.add(i)});render()}
   else if(a==='link')cpLink();
