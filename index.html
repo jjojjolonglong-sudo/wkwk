@@ -41,7 +41,7 @@ body{
   border-color:transparent!important;
   clip-path:polygon(0 0,calc(100% - var(--c)) 0,100% var(--c),100% 100%,0 100%);
   background:
-    linear-gradient(225deg,transparent calc(var(--c)*.7071 - .62px),var(--bgc) 0) padding-box,
+    linear-gradient(225deg,transparent calc(var(--c)*.7071 + .15px),var(--bgc) 0) padding-box,   /* 잘린 변의 선을 테두리보다 조금 굵게: 화면 배율(125%·150%)에서 테두리가 얇게 그려져도 사선이 사라지지 않게 */
     linear-gradient(var(--lc),var(--lc)) border-box;
 }
 
@@ -51,11 +51,14 @@ body{
 .logo{--c:7px;--bgc:var(--ye);margin:0;font-family:'Courier New',monospace;font-size:22px;font-weight:800;letter-spacing:-.02em;border:1.5px solid var(--ink);padding:0 10px}
 .sub{font-weight:700;font-size:13px;flex:1}
 .tabs{flex:none;display:flex;gap:4px;padding-left:8px;margin-bottom:-1.5px;position:relative;z-index:2}
-.tab{--c:8px;--bgc:#CFE0EA;font:inherit;font-weight:700;padding:6px 14px 5px;margin-top:8px;border:1.5px solid var(--ink);border-bottom:0;color:var(--ink);cursor:pointer}
-.tab[aria-selected=true]{--bgc:var(--ye);margin-top:0;padding-top:12px}
-.sheet{--c:18px;position:relative;z-index:1;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;border:1.5px solid var(--ink);padding:0 10px 20px}
+.tab{--c:8px;--bgc:#CFE0EA;font:inherit;font-weight:700;padding:6px 14px 5px;margin-top:8px;border:1.5px solid var(--ink);color:var(--ink);cursor:pointer}   /* 아래 선이 내용 상자의 윗선과 겹쳐요 */
+.tab[aria-selected=true]{--bgc:var(--ye);margin-top:0;padding-top:12px;border-bottom:0;padding-bottom:6.5px}   /* 고른 탭만 아래 선이 없어서 내용 상자와 이어져요 */
+.sheet{--c:18px;position:relative;z-index:1;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;border:1.5px solid var(--ink);padding:0}
+/* 위쪽(작품 추가·기록 추가 줄)은 고정, 그 아래만 스크롤 → 잘린 모서리와 스크롤바가 겹치지 않아요 */
+.sh{flex:none;min-height:18px;padding:0 10px}.scr{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 10px 20px}
+.sh:empty+.scr>.pt:first-child{padding-top:0}
 footer{flex:none;margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--mute)}
-.stick{position:sticky;top:0;z-index:3;background:var(--paper);padding:14px 0 6px;margin:0 -10px;padding-left:10px;padding-right:10px}
+.stick{background:none;padding:14px 0 6px;margin:0 -10px;padding-left:10px;padding-right:10px}
 .pt{padding-top:16px}
 
 /* 버튼·입력 */
@@ -68,7 +71,7 @@ button{font:inherit;color:inherit}
 .btn:focus-visible,.tab:focus-visible,.chip:focus-visible,.card:focus-visible,.ar:focus-visible,.leaf:focus-visible,.cv.big:focus-visible{outline:3px solid var(--cy);outline-offset:-5px}
 input:focus-visible,select:focus-visible{outline:3px solid var(--cy);outline-offset:2px}
 label{display:block;font-weight:700;font-size:13px;margin-top:10px}
-input,select{display:block;width:100%;font:inherit;font-weight:400;border:1.5px solid var(--ink);background:#fff;color:var(--ink);padding:7px 8px;margin-top:3px;border-radius:0}
+input,select,textarea{display:block;width:100%;font:inherit;font-weight:400;border:1.5px solid var(--ink);background:#fff;color:var(--ink);padding:7px 8px;margin-top:3px;border-radius:0}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .hint{font-size:12px;color:var(--mute);margin:6px 0 0}
@@ -121,7 +124,14 @@ input,select{display:block;width:100%;font:inherit;font-weight:400;border:1.5px 
 .ar,.leaf{border-bottom:1px dashed var(--dash);cursor:pointer}
 .ar.l0{background:#EEF4F8;font-weight:800}
 .ar.l1{background:#F7FAFC;font-weight:700}
-.ar:hover,.leaf:hover{background:#FFFBD6}
+.ar:hover,.leaf:hover{background:#FFFBD6}.leaf{user-select:none}
+/* 작품 상세 보기 */
+.vw{display:flex;gap:14px;align-items:flex-start;margin-top:8px}.cv.nv{cursor:default}.cv.nv::before{content:""}.cv.nv.e::before{content:"표지 없음";font-size:11px;font-weight:700}
+.vt{min-width:0;padding-top:2px}.vt .nm{font-size:20px}.lg{margin:12px 0 0;white-space:pre-wrap;font-size:14px;line-height:1.55}.lg.e{color:var(--mute);font-size:13px}
+.kv{display:grid;grid-template-columns:64px 1fr;gap:6px 10px;margin:12px 0 0;align-items:baseline}.kv dt{font-size:13px;font-weight:700;color:var(--mute)}.kv dd{margin:0}
+textarea{resize:vertical;line-height:1.5}
+.lockf{position:relative}.lockf input{background:#F1F4F7;color:var(--mute);cursor:not-allowed}
+.lockf:hover::after{content:attr(data-tip);position:absolute;left:0;top:6px;z-index:5;background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:5px 9px;white-space:nowrap;pointer-events:none}
 
 /* 원고(준비중) */
 .soon{text-align:center;padding:40px 12px}
@@ -190,12 +200,11 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
 <!-- 작품 -->
 <dialog id="wd">
   <h2 id="wd-t">작품</h2>
-  <label>작품 이름<input id="w-name" maxlength="100"></label>
-  <label>필명<input id="w-pen" maxlength="60"></label>
-  <div class="two">
-    <label>분량 (만자, 공미포)<input id="w-vol" type="number" step="0.1" min="0" inputmode="decimal" placeholder="12.5"></label>
-    <label>가격 (₩)<input id="w-price" type="number" step="1" min="0" inputmode="numeric"></label>
-  </div>
+  <!-- 상세 보기 -->
+  <section id="wv"></section>
+  <div class="btns" id="wv-btns"><button class="btn pri" id="w-edit" type="button">편집</button><button class="btn" id="w-close" type="button">닫기</button></div>
+  <!-- 편집 (순서: 표지 · 제목 · 필명 · 로그라인 · 분량 · 가격 · 이벤트 · 별점 · 수입) -->
+  <section id="we">
   <label>표지</label>
   <div class="covrow">
     <div class="cv big" id="w-cv" role="button" tabindex="0" aria-label="표지 이미지 선택"></div>
@@ -204,6 +213,13 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
       <button class="btn sm" id="w-clr" type="button">표지 빼기</button>
       <p class="hint">왼쪽 박스를 누르면 이미지를 고를 수 있어요. 세로 200px WebP로 줄여서 올라가요. 파일 삭제는 mnmn에서 해요.</p>
     </div>
+  </div>
+  <label>제목<input id="w-name" maxlength="100"></label>
+  <label>필명<input id="w-pen" maxlength="60"></label>
+  <label>로그라인<textarea id="w-log" rows="3" maxlength="500" placeholder="한두 문장으로 작품 소개"></textarea></label>
+  <div class="two">
+    <label>분량 (만자, 공미포)<input id="w-vol" type="number" step="0.1" min="0" inputmode="decimal" placeholder="12.5"></label>
+    <label>가격 (₩)<input id="w-price" type="number" step="1" min="0" inputmode="numeric"></label>
   </div>
   <section id="w-ev" hidden>
     <h3>이벤트</h3>
@@ -217,12 +233,17 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
       <div class="btns" style="margin-top:10px"><button class="btn pri sm" id="e-save" type="button">추가</button><button class="btn sm" id="e-cancel" type="button" hidden>취소</button></div>
     </div>
   </section>
+  <div class="two" id="w-lock">
+    <div class="lockf" data-tip="별점은 집계 탭에서 수정해요"><label>별점 (가장 최근)<input id="w-star" readonly tabindex="-1"></label></div>
+    <div class="lockf" data-tip="수입은 집계 탭에서 수정해요"><label>수입 (합계)<input id="w-inc" readonly tabindex="-1"></label></div>
+  </div>
   <div id="w-busy" role="status" hidden></div>
-  <div class="btns"><button class="btn pri" id="w-save" type="button">저장</button><button class="btn" id="w-close" type="button">닫기</button></div>
+  <div class="btns"><button class="btn pri" id="w-save" type="button">저장</button><button class="btn" id="w-cancel" type="button">취소</button></div>
   <div style="margin-top:18px" id="w-delbox" hidden>
     <button class="btn dng sm" id="w-del" type="button">작품 삭제</button>
   </div>
   <p class="hint" id="w-pubnote" hidden>출간된 작품은 삭제할 수 없어요.</p>
+  </section>
 </dialog>
 
 <!-- 수입 -->
@@ -282,6 +303,34 @@ const status=w=>{const e=sortEv(evOf(w.id))[0];return e?e.type:'미시작'};   /
 const isPub=w=>evOf(w.id).some(e=>e.type==='출간');
 const pubDate=w=>evOf(w.id).filter(e=>e.type==='출간'&&e.start_date).map(e=>e.start_date).sort()[0]||'';
 const wname=id=>(S.works.find(w=>w.id===id)||{}).name||'(삭제된 작품)';
+/* 집계 정렬: 출간일 최근순 → 출간 안 한 작품은 뒤로 → 같으면 제목순 */
+const pdOf=id=>{const w=S.works.find(x=>x.id===id);return w?pubDate(w):''};
+const byPub=(a,b)=>{const x=pdOf(a),y=pdOf(b);return x!==y?(x<y?1:-1):wname(a).localeCompare(wname(b),'ko')};
+const incOf=id=>S.inc.filter(i=>i.work_id===id);
+const lastStar=id=>(incOf(id).filter(x=>x.star!=null).sort((a,b)=>a.span<b.span?1:-1)[0]||{}).star;
+const hasLog=()=>S.works.some(w=>'logline' in w);   // 로그라인 칸(SQL)이 있는지
+
+/* 매월 1일 자동 집계: 그 달 1일 기준으로 이미 출간된 작품마다 이번 달 기록(빈 칸)을 만들어 둬요.
+   기록이 있는 작품은 마지막 기록 다음 달부터 이번 달까지 빠진 달을 채우고, 기록이 하나도 없으면 이번 달만 만들어요. */
+let autoDone=false;
+const nextM=m=>{let [y,mo]=m.split('-').map(Number);mo++;if(mo>12){mo=1;y++}return y+'-'+String(mo).padStart(2,'0')};
+async function autoMonthly(){
+  if(autoDone)return false;autoDone=true;
+  const ym=todayKST().slice(0,7),add=[];
+  for(const w of S.works){
+    const pd=pubDate(w);if(!pd)continue;
+    const first=pd.slice(8,10)==='01'?pd.slice(0,7):nextM(pd.slice(0,7));   // 출간일 이후 처음 맞는 1일
+    if(first>ym)continue;
+    const have=incOf(w.id).map(i=>i.span.slice(0,7)).sort();
+    let m=have.length?nextM(have[have.length-1]):ym;if(m<first)m=first;
+    for(;m<=ym;m=nextM(m))add.push({work_id:w.id,user_id:S.uid,span:m+'-01',sell:null,income:null,star:null});
+  }
+  if(!add.length)return false;
+  const {error}=await sb.from('wkwk_income').insert(add);
+  if(error)for(const r of add)await sb.from('wkwk_income').insert(r);   // 다른 기기에서 먼저 만든 게 있으면 그것만 건너뛰어요
+  toast(`${+ym.slice(5)}월 집계 기록 ${add.length}개를 자동으로 만들었어요`);
+  return true;
+}
 
 async function loadAll(){
   const [a,b,c,d]=await Promise.all([
@@ -291,7 +340,9 @@ async function loadAll(){
     sb.from('wkwk_copy').select('*')]);
   const er=a.error||b.error||c.error||d.error;
   if(er){fail(er);return}
-  S.works=a.data;S.ev=b.data;S.inc=c.data;S.cp=d.data||[];render();
+  S.works=a.data;S.ev=b.data;S.inc=c.data;S.cp=d.data||[];
+  if(!autoDone&&await autoMonthly()){const r=await sb.from('wkwk_income').select('*');if(!r.error)S.inc=r.data}
+  render();
 }
 
 /* ---------- 화면 ---------- */
@@ -307,7 +358,7 @@ function vMain(){
     <button class="btn" data-nav="-1" aria-label="이전">◀</button>
     <div class="pk"><div class="pk-n">${esc(name)}</div><div class="pk-i num">${i+1} / ${ids.length}</div></div>
     <button class="btn" data-nav="1" aria-label="다음">▶</button></div>
-  <div class="slip"><div class="l1">수입금 합계</div><div class="amt num">${fmtW(sum)}</div><div class="l3">${rows.length}건</div></div></div>`;
+  <div class="slip"><div class="l1">수입금 합계</div><div class="amt num">${fmtW(sum)}</div><div class="l3">${rows.filter(x=>x.income!=null).length}건</div></div></div>`;
 }
 function card(w){
   const st=status(w),pd=pubDate(w);
@@ -510,8 +561,8 @@ $('view').addEventListener('click',e=>{
 });
 const sums=rs=>[rs.reduce((a,i)=>a+(i.sell||0),0),rs.reduce((a,i)=>a+(i.income||0),0)];
 const arow=(cls,tg,lv,open,label,sell,inc,star)=>`<div class="cols ar ${cls}" data-tg="${tg}" tabindex="0" role="button" aria-expanded="${open}" style="--lv:${lv}"><span class="lb" title="${label}">${open?'▾':'▸'} ${label}</span><span class="n">${sell}</span><span class="n">${inc}</span><span class="n">${star}</span></div>`;
-const lrow=(i,lv,label)=>`<div class="cols leaf" data-inc="${i.id}" tabindex="0" role="button" style="--lv:${lv}"><span class="lb" title="${label}">${label}</span><span class="n">${fmtN(i.sell)}</span><span class="n">${fmtW(i.income)}</span><span class="n">${fmtN(i.star)}</span></div>`;
-const byName=(a,b)=>wname(a.work_id).localeCompare(wname(b.work_id),'ko');
+const lrow=(i,lv,label)=>`<div class="cols leaf" data-inc="${i.id}" tabindex="0" role="button" title="더블클릭해서 수정" style="--lv:${lv}"><span class="lb" title="${label}">${label}</span><span class="n">${fmtN(i.sell)}</span><span class="n">${fmtW(i.income)}</span><span class="n">${fmtN(i.star)}</span></div>`;
+
 function vInc(){
   const mv=S.iv==='month';
   const head=`<div class="stick"><div class="bar"><div class="seg">
@@ -531,13 +582,13 @@ function vInc(){
       if(oy)h+=[...M.keys()].sort().reverse().map(m=>{
         const rs=M.get(m),om=S.om.has(m),[s2,t2]=sums(rs);
         let r=arow('l1','m:'+m,1,om,`${+m.slice(5)}월`,fmtN(s2),fmtW(t2),'');
-        if(om)r+=[...rs].sort(byName).map(i=>lrow(i,2,esc(wname(i.work_id)))).join('');
+        if(om)r+=[...rs].sort((a,b)=>byPub(a.work_id,b.work_id)).map(i=>lrow(i,2,esc(wname(i.work_id)))).join('');
         return r}).join('');
       return h}).join('');
   }else{
     const W=new Map();
     for(const i of S.inc)(W.get(i.work_id)||W.set(i.work_id,[]).get(i.work_id)).push(i);
-    body=[...W.keys()].sort((a,b)=>wname(a).localeCompare(wname(b),'ko')).map(id=>{
+    body=[...W.keys()].sort(byPub).map(id=>{
       const rs=[...W.get(id)].sort((a,b)=>a.span<b.span?1:-1),o=S.ow===id,[s1,t1]=sums(rs);
       const st=(rs.find(x=>x.star!=null)||{}).star;     // 별은 가장 최근 값
       let h=arow('l0','w:'+id,0,o,esc(wname(id)),fmtN(s1),fmtW(t1),st==null?'':fmtN(st));
@@ -547,31 +598,32 @@ function vInc(){
   return head+body;
 }
 function render(){
-  const v=$('view'),top=v.scrollTop;
+  const v=$('view'),old=$('scr'),top=old?old.scrollTop:0;
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.tab===S.tab)));
-  v.innerHTML=({main:vMain,works:vWorks,copy:vCopy,inc:vInc})[S.tab]();
-  v.scrollTop=top;
+  v.innerHTML=`<div class="sh" id="sh"></div><div class="scr" id="scr">${({main:vMain,works:vWorks,copy:vCopy,inc:vInc})[S.tab]()}</div>`;
+  const st=$('scr').querySelector(':scope>.stick');if(st)$('sh').appendChild(st);   // 위 줄은 고정 칸으로
+  $('scr').scrollTop=top;
   if(S.tab==='copy')cpAfter();
 }
 const flip=(set,k)=>set.has(k)?set.delete(k):set.add(k);
-document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(t){S.tab=t.dataset.tab;render();$('view').scrollTop=0;if(S.tab==='copy'&&typeof window.showDirectoryPicker==='function')copyScan(false)}});
+document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(t){S.tab=t.dataset.tab;render();$('scr').scrollTop=0;if(S.tab==='copy'&&typeof window.showDirectoryPicker==='function')copyScan(false)}});
 $('view').addEventListener('click',e=>{
   const t=e.target.closest('[data-nav],[data-ws],[data-iv],[data-tg],[data-work],[data-inc],[data-act]');if(!t)return;
   const d=t.dataset;
   if(d.nav){const ids=mainIds(),i=Math.max(0,ids.indexOf(S.sel));S.sel=ids[(i+(+d.nav)+ids.length)%ids.length];render()}
-  else if(d.ws){S.ws=d.ws;render();$('view').scrollTop=0}
-  else if(d.iv){S.iv=d.iv;render();$('view').scrollTop=0}
+  else if(d.ws){S.ws=d.ws;render();$('scr').scrollTop=0}
+  else if(d.iv){S.iv=d.iv;render();$('scr').scrollTop=0}
   else if(d.tg){const k=d.tg.slice(0,1),v=d.tg.slice(2);
     if(k==='y')flip(S.oy,v);else if(k==='m')flip(S.om,v);else S.ow=S.ow===v?null:v;   // 작품별은 한 줄만 펴져요
     render()}
-  else if(d.work)openWork(d.work);
-  else if(d.inc)openInc(d.inc);
+  else if(d.work)openView(d.work);
   else if(d.act==='addwork')openWork(null);
   else if(d.act==='addinc')openInc(null);
 });
 $('view').addEventListener('keydown',e=>{
-  if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-work],[data-inc],[data-tg]')){e.preventDefault();e.target.click()}
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-work],[data-inc],[data-tg]')){e.preventDefault();if(e.target.dataset.inc)openInc(e.target.dataset.inc);else e.target.click()}
 });
+$('view').addEventListener('dblclick',e=>{const t=e.target.closest('[data-inc]');if(t)openInc(t.dataset.inc)});   // 집계: 더블클릭으로 바로 수정
 addEventListener('keydown',e=>{   // 메인에서 ←/→ 로도 넘길 수 있어요
   if(S.tab!=='main'||document.querySelector('dialog[open]')||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
   if(e.key==='ArrowLeft'||e.key==='ArrowRight'){const b=$('view').querySelector(`[data-nav="${e.key==='ArrowLeft'?-1:1}"]`);if(b)b.click()}
@@ -594,17 +646,38 @@ function setCv(){
   else if(cur.cover&&!cur.clear)box.innerHTML=Media.img(cur.cover,'onerror="this.remove()"');
   else box.innerHTML='';
 }
+function wdMode(edit){$('wv').hidden=$('wv-btns').hidden=edit;$('we').hidden=!edit}
+/* 상세 보기: 표지 · 제목 · 필명 · 로그라인 · 분량 · 가격 · 이벤트 · 별점 · 수입 */
+function openView(id){
+  const w=S.works.find(x=>x.id===id);if(!w)return;
+  if(cur.pend){cur.pend.close()}
+  cur={id,cover:w.cover,pend:null,clear:false,eid:null};
+  const ev=sortEv(evOf(id)).reverse(),rs=incOf(id),sell=rs.reduce((a,x)=>a+(x.sell||0),0),inc=rs.reduce((a,x)=>a+(x.income||0),0),st=lastStar(id),cv=Media.img(w.cover,'onerror="this.remove()"');
+  $('wd-t').textContent='작품';
+  $('wv').innerHTML=`<div class="vw"><div class="cv big nv${cv?'':' e'}">${cv}</div><div class="vt"><div class="nm">${esc(w.name)}</div><div class="pn">${esc(w.penname||'필명 없음')}</div><div class="sr">${stamp(status(w))}</div></div></div>
+    ${hasLog()?(w.logline?`<p class="lg">${esc(w.logline)}</p>`:'<p class="lg e">로그라인 없음</p>'):''}
+    <dl class="kv"><dt>분량</dt><dd class="num">${w.vol!=null?+w.vol+'만자':'-'}</dd><dt>가격</dt><dd class="num">${fmtW(w.price)}</dd></dl>
+    <h3>이벤트</h3>${ev.length?ev.map(e=>`<div class="ev">${stamp(e.type)}<span class="d num">${evDates(e)}</span></div>`).join(''):'<p class="hint">이벤트가 없어요.</p>'}
+    <dl class="kv"><dt>별점</dt><dd class="num">${st==null?'-':fmtN(st)}</dd><dt>수입</dt><dd class="num">${fmtW(inc)} <span class="hint">· ${fmtN(sell)}부 · ${rs.filter(x=>x.income!=null).length}개월</span></dd></dl>`;
+  wdMode(false);
+  if(!$('wd').open)$('wd').showModal();
+}
 function openWork(id){
   const w=id?S.works.find(x=>x.id===id):null;
   if(cur.pend){cur.pend.close()}
   cur={id:id||null,cover:w?w.cover:null,pend:null,clear:false,eid:null};
   $('wd-t').textContent=w?'작품 수정':'새 작품';
   $('w-name').value=w?w.name:'';$('w-pen').value=w?w.penname||'':'';
+  const lg=$('w-log');lg.disabled=!hasLog();lg.value=w&&w.logline||'';lg.placeholder=hasLog()?'한두 문장으로 작품 소개':'SQL(wkwk_logline.sql) 실행 후 쓸 수 있어요';
   $('w-vol').value=w&&w.vol!=null?+w.vol:'';$('w-price').value=w&&w.price!=null?w.price:'';
+  const st=w?lastStar(w.id):null,rs=w?incOf(w.id):[];
+  $('w-star').value=st==null?'-':fmtN(st);$('w-inc').value=w?fmtW(rs.reduce((a,x)=>a+(x.income||0),0)):'-';
   $('w-file').value='';
-  setCv();resetEv();renderEv();
+  setCv();resetEv();renderEv();wdMode(true);
   if(!$('wd').open)$('wd').showModal();
 }
+$('w-edit').onclick=()=>openWork(cur.id);
+$('w-cancel').onclick=()=>{if(busy)return;if(cur.id)openView(cur.id);else $('wd').close()};
 $('w-cv').onclick=()=>{if(!busy)$('w-file').click()};
 $('w-cv').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('w-cv').click()}};
 $('w-file').onchange=async e=>{
@@ -630,11 +703,11 @@ $('w-save').onclick=async()=>{
   try{
     let cover=cur.clear?null:cur.cover;
     if(cur.pend){cover=await Media.upload(cur.pend);cur.pend.close();cur.pend=null}   // 해시 16자 반환
-    const row={name,penname:$('w-pen').value.trim()||null,vol,price,cover};
+    const row={name,penname:$('w-pen').value.trim()||null,vol,price,cover};if(hasLog())row.logline=$('w-log').value.trim()||null;
     if(cur.id){
       const {error}=await sb.from('wkwk_work').update(row).eq('id',cur.id);
       if(fail(error))return;
-      await loadAll();setBusy(false);$('wd').close();toast('저장했어요');
+      await loadAll();setBusy(false);openView(cur.id);toast('저장했어요');
     }else{
       const {data,error}=await sb.from('wkwk_work').insert({...row,user_id:S.uid}).select().single();
       if(fail(error))return;
