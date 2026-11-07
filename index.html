@@ -36,8 +36,8 @@ body{
 /* 네모 상자: 테두리 1.5px, 바탕색은 --bgc */
 .btn,.chip,.card,.sheet,dialog,.slip,.stamp,#login,.logo,.tab{--bgc:#fff;background:var(--bgc)}
 .btn,.chip,.card,.slip,.stamp,#login,.logo,.tab{position:relative}
-/* 스테이플러: 큰 상자(내용 상자·대화상자·영수증·로그인)의 오른쪽 위 귀퉁이에 사선으로 찝은 심 */
-.sheet::after,dialog::after,.slip::after,#login::after{
+/* 스테이플러: 큰 상자(내용 상자·대화상자·로그인)의 오른쪽 위 귀퉁이에 사선으로 찝은 심 */
+.sheet::after,dialog::after,#login::after{
   content:"";position:absolute;top:13px;right:5px;width:22px;height:2px;z-index:9;pointer-events:none;
   background:#4b5160;transform:rotate(45deg);   /* 한 줄짜리 심: 테두리보다 아주 약간 굵게, 검정보다 살짝 밝게 */
 }
@@ -49,20 +49,22 @@ body{
 .sub{font-weight:700;font-size:13px;flex:1}
 .tabs{flex:none;display:flex;gap:4px;padding-left:8px;margin-bottom:calc(-1 * var(--bw,1.5px))}   /* 탭 아래쪽이 내용 상자 윗선과 겹쳐요 */
 /* 겹치는 순서: 고른 탭(맨 앞, 상자 윗선을 덮어 이어짐) > 내용 상자 > 다른 탭(맨 뒤, 아래쪽이 상자 윗선에 가려 일자로 보임) */
-.tab{--c:8px;--bgc:#CFE0EA;z-index:1;font:inherit;font-weight:700;padding:6px 14px 5px;margin-top:8px;border:1.5px solid var(--ink);border-bottom:0;color:var(--ink);cursor:pointer}
+.tab{--c:8px;--bgc:#CFE0EA;z-index:1;font-family:inherit;padding:6px 14px 5px;margin-top:8px;border:1.5px solid var(--ink);border-bottom:0;color:var(--ink);cursor:pointer}
 .tab[aria-selected=true]{--bgc:var(--ye);z-index:3;margin-top:0;padding-top:12px;padding-bottom:8px;margin-bottom:-3px}   /* 상자 윗선보다 3px 아래까지 내려와서 선을 확실히 덮어요 */
 .sheet{--c:18px;position:relative;z-index:2;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;border:1.5px solid var(--ink);padding:0}
 /* 위쪽(작품 추가·기록 추가 줄)은 고정, 그 아래만 스크롤 → 잘린 모서리와 스크롤바가 겹치지 않아요 */
-.sh{flex:none;min-height:32px;padding:0 10px}.sh .bar{padding-right:26px}   /* 오른쪽 위 스테이플러 자리 */.scr{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 10px 20px}
+.sh{flex:none;min-height:24px;padding:0 10px}   /* 모든 탭: 내용 위 여백 24px (스테이플러가 이 여백 안에 들어가요) */.scr{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 10px 20px}
 .sh:empty+.scr>.pt:first-child{padding-top:0}
 footer{flex:none;margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--mute)}
-.stick{background:none;padding:14px 0 6px;margin:0 -10px;padding-left:10px;padding-right:10px}
+.stick{background:none;padding:24px 0 6px;margin:0 -10px;padding-left:10px;padding-right:10px}
 .pt{padding-top:16px}
 
 /* 버튼·입력 */
 button{font:inherit;color:inherit}
-.btn{--c:7px;font-weight:700;border:1.5px solid var(--ink);padding:6px 12px;cursor:pointer}
-.btn.sm{--c:7px;padding:2px 9px;font-size:13px}
+/* 버튼 크기 두 가지로 통일: 기본(탭·칩·버튼) 14px·굵게·높이 33px / 작은 버튼 13px·굵게·높이 25px */
+.btn,.chip,.tab{font-size:14px;font-weight:700;line-height:20px}
+.btn{border:1.5px solid var(--ink);padding:5px 12px;cursor:pointer}
+.btn.sm{font-size:13px;line-height:18px;padding:2px 9px}
 .btn.pri{--bgc:var(--ye)} .btn.dng{--bgc:var(--mg);color:#fff}
 .btn:hover:not(:disabled){--bgc:#F1F5F8} .btn.pri:hover:not(:disabled){--bgc:#F2D800} .btn.dng:hover:not(:disabled){--bgc:#D12A7A}
 .btn:disabled{opacity:.45;cursor:not-allowed}
@@ -77,7 +79,7 @@ input,select,textarea{display:block;width:100%;font:inherit;font-weight:400;bord
 .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 
 /* 칩 / 구분 버튼 */
-.chip{--c:6px;font-weight:700;border:1.5px solid var(--ink);padding:5px 12px;cursor:pointer}
+.chip{border:1.5px solid var(--ink);padding:5px 12px;cursor:pointer}
 .chip[aria-pressed=true]{--bgc:var(--ink);color:#fff}
 .seg{display:flex}
 .seg .chip{margin-left:-1.5px}.seg .chip:first-child{margin-left:0}
@@ -476,7 +478,7 @@ function vCopy(){
   const rows=sortCp(),st=CP.state,ar=k=>CP.sort===k?(CP.dir<0?' ▼':' ▲'):'',canOpen=typeof window.showDirectoryPicker==='function';
   const bar=`<div class="stick"><div class="bar"><b>원고 ${rows.length}개</b>
     <span class="hint" style="margin:0">${st==='ok'?'폴더: '+esc(CP.dirName):''}</span>
-    ${canOpen?'<button class="btn sm" data-cp="rescan">다시 읽기</button>':''}</div></div>`;
+    ${canOpen?'<button class="btn" data-cp="rescan">다시 읽기</button>':''}</div></div>`;
   const note=st==='scanning'?'<p class="hint">폴더를 읽는 중…</p>'
     :st==='nohandle'?(canOpen?'<p class="hint">tdtd의 저장 폴더를 찾지 못했어요. 이 브라우저에서 tdtd를 열어 저장 폴더를 지정한 적이 있어야 본문을 볼 수 있어요.</p>':'')
     :st==='perm'?`<p class="hint">폴더(${esc(CP.dirName)})를 읽으려면 허용이 필요해요.</p><button class="btn pri sm" data-cp="perm">폴더 접근 허용</button>`
