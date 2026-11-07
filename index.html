@@ -73,7 +73,7 @@ input:focus-visible,select:focus-visible{outline:3px solid var(--cy);outline-off
 label{display:block;font-weight:700;font-size:13px;margin-top:10px}
 input,select,textarea{display:block;width:100%;font:inherit;font-weight:400;border:1.5px solid var(--ink);background:#fff;color:var(--ink);padding:7px 8px;margin-top:3px;border-radius:0}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.btns.ft{justify-content:flex-end}   /* 창 아래 버튼은 오른쪽에 */
 .hint{font-size:12px;color:var(--mute);margin:6px 0 0}
 .empty{text-align:center;color:var(--mute);padding:36px 8px}
 .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.bar.l{justify-content:flex-start}
@@ -201,7 +201,7 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
   <h2 id="wd-t">작품</h2>
   <!-- 상세 보기 -->
   <section id="wv"></section>
-  <div class="btns" id="wv-btns"><button class="btn pri" id="w-edit" type="button">편집</button><button class="btn" id="w-close" type="button">닫기</button></div>
+  <div class="btns ft" id="wv-btns"><button class="btn pri" id="w-edit" type="button">편집</button><button class="btn" id="w-close" type="button">닫기</button></div>
   <!-- 편집 (순서: 표지 · 제목 · 필명 · 로그라인 · 분량 · 가격 · 이벤트 · 별점 · 수입) -->
   <section id="we">
   <label>표지</label>
@@ -237,11 +237,8 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
     <div class="lockf" data-tip="수입은 집계 탭에서 수정해요"><label>수입 (합계)<input id="w-inc" readonly tabindex="-1"></label></div>
   </div>
   <div id="w-busy" role="status" hidden></div>
-  <div class="btns"><button class="btn pri" id="w-save" type="button">저장</button><button class="btn" id="w-cancel" type="button">취소</button></div>
-  <div style="margin-top:18px" id="w-delbox" hidden>
-    <button class="btn dng sm" id="w-del" type="button">작품 삭제</button>
-  </div>
-  <p class="hint" id="w-pubnote" hidden>출간된 작품은 삭제할 수 없어요.</p>
+  <div class="btns ft"><button class="btn pri" id="w-save" type="button">저장</button><button class="btn" id="w-cancel" type="button">취소</button><button class="btn dng" id="w-del" type="button" hidden>삭제</button></div>
+  <p class="hint" id="w-pubnote" style="text-align:right" hidden>출간된 작품은 삭제할 수 없어요.</p>
   </section>
 </div></dialog>
 
@@ -255,7 +252,7 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
     <label>수입 (₩)<input id="i-inc" type="number" min="0" step="1" inputmode="numeric"></label>
   </div>
   <label>리디북스 별점 (별 개수)<input id="i-star" type="number" min="0" step="1" inputmode="numeric"></label>
-  <div class="btns">
+  <div class="btns ft">
     <button class="btn pri" id="i-save" type="button">저장</button>
     <button class="btn" id="i-close" type="button">닫기</button>
     <button class="btn dng" id="i-del" type="button" hidden>삭제</button>
@@ -720,7 +717,7 @@ const evDates=e=>e.start_date&&e.end_date?`${e.start_date} ~ ${e.end_date}`:e.st
 function renderEv(){
   const w=S.works.find(x=>x.id===cur.id);
   $('w-ev').hidden=!w;
-  $('w-delbox').hidden=!w||isPub(w);
+  $('w-del').hidden=!w||isPub(w);
   $('w-pubnote').hidden=!w||!isPub(w);
   if(!w)return;
   const list=sortEv(evOf(w.id)).reverse();   // 오래된 것이 위, 최근이 아래
