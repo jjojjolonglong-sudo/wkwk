@@ -33,20 +33,13 @@ body{
 }
 .num{font-family:'Courier New','D2Coding',monospace;font-variant-numeric:tabular-nums}
 
-/* 한쪽(오른쪽 위) 귀퉁이만 자른 네모.
-   clip-path로 귀퉁이를 자르고, 잘린 사선은 ::after의 얇은 막대를 45° 돌려서 그려요.
-   막대 굵기 --bw 는 실제로 화면에 그려진 테두리 굵기(배율마다 다름)를 JS가 재서 넣어요 → 사선과 다른 변의 굵기가 같아요. --c 가 자르는 크기 */
-.btn,.chip,.card,.sheet,dialog,.slip,.stamp,#login,.logo,.tab{
-  --c:9px; --bgc:#fff; --lc:var(--ink);
-  clip-path:polygon(0 0,calc(100% - var(--c)) 0,100% var(--c),100% 100%,0 100%);
-  background:var(--bgc);
-}
+/* 네모 상자: 테두리 1.5px, 바탕색은 --bgc */
+.btn,.chip,.card,.sheet,dialog,.slip,.stamp,#login,.logo,.tab{--bgc:#fff;background:var(--bgc)}
 .btn,.chip,.card,.slip,.stamp,#login,.logo,.tab{position:relative}
-.btn::after,.chip::after,.card::after,.sheet::after,dialog::after,.slip::after,.stamp::after,#login::after,.logo::after,.tab::after{
-  content:"";position:absolute;pointer-events:none;z-index:9;
-  left:calc(100% - var(--c) + var(--bw,1.5px) - 1px);top:calc(-1 * var(--bw,1.5px));
-  width:calc(var(--c) * 1.41421 + 2px);height:var(--bw,1.5px);background:var(--lc);
-  transform-origin:1px 0;transform:rotate(45deg);
+/* 스테이플러: 큰 상자(내용 상자·대화상자·영수증·로그인)의 오른쪽 위 귀퉁이에 사선으로 찝은 심 */
+.sheet::after,dialog::after,.slip::after,#login::after{
+  content:"";position:absolute;top:13px;right:5px;width:22px;height:2px;z-index:9;pointer-events:none;
+  background:#4b5160;transform:rotate(45deg);   /* 한 줄짜리 심: 테두리보다 아주 약간 굵게, 검정보다 살짝 밝게 */
 }
 
 /* 전체 틀: 가로·세로 최대치가 있고, 머리글+탭은 고정, 그 아래만 스크롤 */
@@ -57,10 +50,10 @@ body{
 .tabs{flex:none;display:flex;gap:4px;padding-left:8px;margin-bottom:calc(-1 * var(--bw,1.5px))}   /* 탭 아래쪽이 내용 상자 윗선과 겹쳐요 */
 /* 겹치는 순서: 고른 탭(맨 앞, 상자 윗선을 덮어 이어짐) > 내용 상자 > 다른 탭(맨 뒤, 아래쪽이 상자 윗선에 가려 일자로 보임) */
 .tab{--c:8px;--bgc:#CFE0EA;z-index:1;font:inherit;font-weight:700;padding:6px 14px 5px;margin-top:8px;border:1.5px solid var(--ink);border-bottom:0;color:var(--ink);cursor:pointer}
-.tab[aria-selected=true]{--bgc:var(--ye);z-index:3;margin-top:0;padding-top:12px}
+.tab[aria-selected=true]{--bgc:var(--ye);z-index:3;margin-top:0;padding-top:12px;padding-bottom:8px;margin-bottom:-3px}   /* 상자 윗선보다 3px 아래까지 내려와서 선을 확실히 덮어요 */
 .sheet{--c:18px;position:relative;z-index:2;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;border:1.5px solid var(--ink);padding:0}
 /* 위쪽(작품 추가·기록 추가 줄)은 고정, 그 아래만 스크롤 → 잘린 모서리와 스크롤바가 겹치지 않아요 */
-.sh{flex:none;min-height:18px;padding:0 10px}.scr{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 10px 20px}
+.sh{flex:none;min-height:32px;padding:0 10px}.sh .bar{padding-right:26px}   /* 오른쪽 위 스테이플러 자리 */.scr{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 10px 20px}
 .sh:empty+.scr>.pt:first-child{padding-top:0}
 footer{flex:none;margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--mute)}
 .stick{background:none;padding:14px 0 6px;margin:0 -10px;padding-left:10px;padding-right:10px}
@@ -127,9 +120,9 @@ input,select,textarea{display:block;width:100%;font:inherit;font-weight:400;bord
 .cols.ch{font-size:12px;font-weight:700;color:var(--mute);border-bottom:1.5px solid var(--ink);margin-top:10px}
 .cols.ch>*{padding-top:4px;padding-bottom:4px}
 .ar,.leaf{border-bottom:1px dashed var(--dash);cursor:pointer}
-.ar.l0{background:#EEF4F8;font-weight:800}
-.ar.l1{background:#F7FAFC;font-weight:700}
-.ar:hover,.leaf:hover{background:#FFFBD6}.leaf{user-select:none}
+.ar.l0{font-weight:800}
+.ar.l1{font-weight:700}
+.ar:hover,.leaf:hover{background:#F1F5F8}.leaf{user-select:none}
 /* 작품 상세 보기 */
 .vw{display:flex;gap:14px;align-items:flex-start;margin-top:8px}.cv.nv{cursor:default}.cv.nv::before{content:""}.cv.nv.e::before{content:"표지 없음";font-size:11px;font-weight:700}
 .vt{min-width:0;padding-top:2px}.vt .nm{font-size:20px}.lg{margin:12px 0 0;white-space:pre-wrap;font-size:14px;line-height:1.55}.lg.e{color:var(--mute);font-size:13px}
@@ -173,7 +166,7 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
 .pvbox{position:relative;height:150px;overflow:hidden;padding:8px 10px;background:#fff;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
 .pvbox.mute{color:var(--mute);font-size:13px}
 .pvbox .lk{color:var(--mute)}
-.cptb td.rfc{padding:4px 4px 4px 0;text-align:right}.rf{padding:1px 8px;line-height:1.4}.rf[disabled]{opacity:.5;cursor:wait}
+.cptb td.rfc{padding:4px 4px 4px 0;text-align:right}.btn.rf{border:0;--bgc:transparent;padding:1px 8px;line-height:1.4;color:var(--mute)}.btn.rf:hover:not(:disabled){--bgc:#E3EBF1;color:var(--ink)}.rf[disabled]{opacity:.5;cursor:wait}
 .cpun{margin-top:22px;padding-top:12px;border-top:1.5px dashed var(--dash)}
 .cpf{display:flex;align-items:center;gap:6px;font-weight:400;font-size:14px;margin:4px 0}
 .cpf input{display:inline-block;width:auto;margin:0}
@@ -494,7 +487,7 @@ function vCopy(){
     return `<tr class="cprow${open?' open':''}"${canOpen?` data-cp="row" data-id="${esc(r.id)}"`:''}><td class="num">${esc(r.date||'-')}</td><td class="num" title="${esc(r.modified_at||'')}">${esc(kstDate(r.modified_at)||'-')}</td><td title="${esc(wname(r.work_id))}">${esc(wname(r.work_id))}</td><td title="${esc(nm)}">${esc(nm)}${gone?' <span class="hint">(파일 없음)</span>':''}</td>${canOpen?`<td class="rfc"><button class="btn sm rf" data-cp="rf" data-id="${esc(r.id)}" title="이 원고만 다시 읽기">↻</button></td>`:''}</tr>`
       +(open?`<tr class="pv"><td colspan="${canOpen?5:4}">`+'<div class="pvbox" id="pvbox">불러오는 중…</div></td></tr>':'');
   }).join('');
-  const table=rows.length?`<table class="cptb${canOpen?'':' nopv'}"><colgroup><col style="width:92px"><col style="width:92px"><col style="width:32%"><col>${canOpen?'<col style="width:44px">':''}</colgroup><thead><tr><th data-cp="sort" data-k="c">생성일${ar('c')}</th><th data-cp="sort" data-k="mod">수정일${ar('mod')}</th><th data-cp="sort" data-k="work">작품${ar('work')}</th><th data-cp="sort" data-k="name">파일명${ar('name')}</th>${canOpen?'<th title="원고별 다시 읽기"></th>':''}</tr></thead><tbody>${body}</tbody></table>`
+  const table=rows.length?`<table class="cptb${canOpen?'':' nopv'}"><colgroup><col style="width:92px"><col style="width:92px"><col style="width:22%"><col>${canOpen?'<col style="width:44px">':''}</colgroup><thead><tr><th data-cp="sort" data-k="c">생성일${ar('c')}</th><th data-cp="sort" data-k="mod">수정일${ar('mod')}</th><th data-cp="sort" data-k="work">작품${ar('work')}</th><th data-cp="sort" data-k="name">파일명${ar('name')}</th>${canOpen?'<th title="원고별 다시 읽기"></th>':''}</tr></thead><tbody>${body}</tbody></table>`
     :'<p class="empty">아직 연결된 원고가 없어요.</p>';
   let un='';
   if(st==='ok'&&CP.un.length){
@@ -607,12 +600,14 @@ function vInc(){
   }
   return head+body;
 }
+function fitSh(){const sc=$('scr'),sh=$('sh');if(sc&&sh)sh.style.paddingRight=(10+sc.offsetWidth-sc.clientWidth)+'px'}   /* 아래쪽 스크롤바 폭만큼 위 줄도 안쪽으로 */
+addEventListener('resize',()=>fitSh());
 function render(){
   const v=$('view'),old=$('scr'),top=old?old.scrollTop:0;
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.tab===S.tab)));
   v.innerHTML=`<div class="sh" id="sh"></div><div class="scr" id="scr">${({main:vMain,works:vWorks,copy:vCopy,inc:vInc})[S.tab]()}</div>`;
   const st=$('scr').querySelector(':scope>.stick');if(st)$('sh').appendChild(st);   // 위 줄은 고정 칸으로
-  $('scr').scrollTop=top;
+  $('scr').scrollTop=top;fitSh();
   if(S.tab==='copy')cpAfter();
 }
 const flip=(set,k)=>set.has(k)?set.delete(k):set.add(k);
