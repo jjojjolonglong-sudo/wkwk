@@ -76,7 +76,7 @@ input,select,textarea{display:block;width:100%;font:inherit;font-weight:400;bord
 .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .hint{font-size:12px;color:var(--mute);margin:6px 0 0}
 .empty{text-align:center;color:var(--mute);padding:36px 8px}
-.bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.bar.l{justify-content:flex-start}
 
 /* 칩 / 구분 버튼 */
 .chip{border:1.5px solid var(--ink);padding:5px 12px;cursor:pointer}
@@ -104,11 +104,9 @@ input,select,textarea{display:block;width:100%;font:inherit;font-weight:400;bord
 .pd{font-size:12px;font-weight:700}
 
 /* 메인: 화살표 선택 + 영수증 */
-.pick{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;margin:0 4px}
-.pk{text-align:center;min-width:0}
-.pk-n{font-weight:900;font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pk-i{font-size:12px;color:var(--mute)}
-.slip{--c:16px;--bgc:var(--slip);margin:22px 4px 6px;padding:18px 14px 14px;border:1.5px solid var(--ink);text-align:center}
+/* 메인: 내용 상자 전체를 노란색으로, 영수증 내용은 가운데 */
+.sheet.main{--bgc:var(--slip)}.sheet.main .scr{display:flex;align-items:center;justify-content:center}
+.slip{--bgc:transparent;width:min(420px,100%);padding:0 14px 24px;text-align:center}
 .slip .l1{font-weight:700;font-size:13px;padding-bottom:10px;border-bottom:1.5px dashed var(--ink)}
 .slip .amt{font-size:clamp(26px,9vw,40px);font-weight:900;padding:14px 0 8px;overflow-wrap:anywhere}
 .slip .l3{font-size:12px;color:var(--mute);border-top:1.5px dashed var(--ink);padding-top:8px}
@@ -351,19 +349,10 @@ async function loadAll(){
 }
 
 /* ---------- 화면 ---------- */
-const mainIds=()=>['all',...S.works.filter(isPub).map(w=>w.id)];
-function vMain(){
-  const pubs=S.works.filter(isPub);
-  if(!pubs.length)return '<p class="empty pt">아직 출간된 작품이 없어요.<br>작품에 \'출간\' 이벤트를 넣으면 여기 나타나요.</p>';
-  const ids=mainIds();let i=ids.indexOf(S.sel);if(i<0){i=0;S.sel='all'}
-  const name=i===0?'전체 작품':pubs[i-1].name;
-  const rows=S.sel==='all'?S.inc:S.inc.filter(x=>x.work_id===S.sel);
-  const sum=rows.reduce((a,x)=>a+(x.income||0),0);
-  return `<div class="pt"><div class="pick">
-    <button class="btn" data-nav="-1" aria-label="이전">◀</button>
-    <div class="pk"><div class="pk-n">${esc(name)}</div><div class="pk-i num">${i+1} / ${ids.length}</div></div>
-    <button class="btn" data-nav="1" aria-label="다음">▶</button></div>
-  <div class="slip"><div class="l1">수입금 합계</div><div class="amt num">${fmtW(sum)}</div><div class="l3">${rows.filter(x=>x.income!=null).length}건</div></div></div>`;
+function vMain(){   // 메인: 상자 전체가 노란 영수증, 가운데에 총 합계만
+  if(!S.works.some(isPub))return '<div class="slip"><div class="l1">글 써서 번 돈</div><p class="hint" style="margin:16px 0">아직 출간된 작품이 없어요.<br>작품에 \'출간\' 이벤트를 넣으면 여기서 합계를 볼 수 있어요.</p></div>';
+  const sum=S.inc.reduce((a,x)=>a+(x.income||0),0);
+  return `<div class="slip"><div class="l1">글 써서 번 돈</div><div class="amt num">${fmtW(sum)}</div><div class="l3">${S.inc.filter(x=>x.income!=null).length}건</div></div>`;
 }
 function card(w){
   const st=status(w),pd=pubDate(w);
@@ -379,7 +368,7 @@ const SUBS=[['pre','미계약'],['con','계약'],['pub','출간']];
 function vWorks(){
   const cnt={pre:0,con:0,pub:0};S.works.forEach(w=>cnt[grpOf(w)]++);
   const list=S.works.filter(w=>grpOf(w)===S.ws);
-  return `<div class="stick"><div class="bar"><div class="seg">${SUBS.map(([k,n])=>`<button class="chip" data-ws="${k}" aria-pressed="${S.ws===k}">${n} ${cnt[k]}</button>`).join('')}</div>
+  return `<div class="stick"><div class="bar l"><div class="seg">${SUBS.map(([k,n])=>`<button class="chip" data-ws="${k}" aria-pressed="${S.ws===k}">${n} ${cnt[k]}</button>`).join('')}</div>
     <button class="btn pri" data-act="addwork">+ 작품 추가</button></div></div>
     <div class="list">${list.length?list.map(card).join(''):'<p class="empty" style="grid-column:1/-1">이 단계의 작품이 없어요.</p>'}</div>`;
 }
@@ -476,9 +465,9 @@ function sortCp(){
 }
 function vCopy(){
   const rows=sortCp(),st=CP.state,ar=k=>CP.sort===k?(CP.dir<0?' ▼':' ▲'):'',canOpen=typeof window.showDirectoryPicker==='function';
-  const bar=`<div class="stick"><div class="bar"><b>원고 ${rows.length}개</b>
-    <span class="hint" style="margin:0">${st==='ok'?'폴더: '+esc(CP.dirName):''}</span>
-    ${canOpen?'<button class="btn" data-cp="rescan">다시 읽기</button>':''}</div></div>`;
+  const bar=`<div class="stick"><div class="bar l"><b>원고 ${rows.length}개</b>
+    ${canOpen?'<button class="btn sm rf" data-cp="rescan" title="폴더 전체 다시 읽기">↻</button>':''}
+    <span class="hint" style="margin:0">${st==='ok'?'폴더: '+esc(CP.dirName):''}</span></div></div>`;
   const note=st==='scanning'?'<p class="hint">폴더를 읽는 중…</p>'
     :st==='nohandle'?(canOpen?'<p class="hint">tdtd의 저장 폴더를 찾지 못했어요. 이 브라우저에서 tdtd를 열어 저장 폴더를 지정한 적이 있어야 본문을 볼 수 있어요.</p>':'')
     :st==='perm'?`<p class="hint">폴더(${esc(CP.dirName)})를 읽으려면 허용이 필요해요.</p><button class="btn pri sm" data-cp="perm">폴더 접근 허용</button>`
@@ -570,7 +559,7 @@ const lrow=(i,lv,label)=>`<div class="cols leaf" data-inc="${i.id}" tabindex="0"
 
 function vInc(){
   const mv=S.iv==='month';
-  const head=`<div class="stick"><div class="bar"><div class="seg">
+  const head=`<div class="stick"><div class="bar l"><div class="seg">
     <button class="chip" data-iv="month" aria-pressed="${mv}">월별</button>
     <button class="chip" data-iv="work" aria-pressed="${!mv}">작품별</button></div>
     <button class="btn pri" data-act="addinc">+ 기록 추가</button></div>
@@ -606,7 +595,7 @@ function fitSh(){const sc=$('scr'),sh=$('sh');if(sc&&sh)sh.style.paddingRight=(1
 addEventListener('resize',()=>fitSh());
 function render(){
   const v=$('view'),old=$('scr'),top=old?old.scrollTop:0;
-  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.tab===S.tab)));
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.tab===S.tab)));v.classList.toggle('main',S.tab==='main');
   v.innerHTML=`<div class="sh" id="sh"></div><div class="scr" id="scr">${({main:vMain,works:vWorks,copy:vCopy,inc:vInc})[S.tab]()}</div>`;
   const st=$('scr').querySelector(':scope>.stick');if(st)$('sh').appendChild(st);   // 위 줄은 고정 칸으로
   $('scr').scrollTop=top;fitSh();
@@ -617,8 +606,7 @@ document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.cl
 $('view').addEventListener('click',e=>{
   const t=e.target.closest('[data-nav],[data-ws],[data-iv],[data-tg],[data-work],[data-inc],[data-act]');if(!t)return;
   const d=t.dataset;
-  if(d.nav){const ids=mainIds(),i=Math.max(0,ids.indexOf(S.sel));S.sel=ids[(i+(+d.nav)+ids.length)%ids.length];render()}
-  else if(d.ws){S.ws=d.ws;render();$('scr').scrollTop=0}
+  if(d.ws){S.ws=d.ws;render();$('scr').scrollTop=0}
   else if(d.iv){S.iv=d.iv;render();$('scr').scrollTop=0}
   else if(d.tg){const k=d.tg.slice(0,1),v=d.tg.slice(2);
     if(k==='y')flip(S.oy,v);else if(k==='m')flip(S.om,v);else S.ow=S.ow===v?null:v;   // 작품별은 한 줄만 펴져요
@@ -631,10 +619,6 @@ $('view').addEventListener('keydown',e=>{
   if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-work],[data-inc],[data-tg]')){e.preventDefault();if(e.target.dataset.inc)openInc(e.target.dataset.inc);else e.target.click()}
 });
 $('view').addEventListener('dblclick',e=>{const t=e.target.closest('[data-inc]');if(t)openInc(t.dataset.inc)});   // 집계: 더블클릭으로 바로 수정
-addEventListener('keydown',e=>{   // 메인에서 ←/→ 로도 넘길 수 있어요
-  if(S.tab!=='main'||document.querySelector('dialog[open]')||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
-  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){const b=$('view').querySelector(`[data-nav="${e.key==='ArrowLeft'?-1:1}"]`);if(b)b.click()}
-});
 
 /* ---------- 작품 대화상자 ---------- */
 let cur={id:null,cover:null,pend:null,clear:false,eid:null};
@@ -773,7 +757,7 @@ function openInc(id){
   $('i-work').innerHTML=ws.map(w=>`<option value="${w.id}">${esc(w.name)}</option>`).join('');
   const ym=todayKST().slice(0,7);   // 한국 시간 기준 이번 달
   $('in-t').textContent=r?'수입 기록 수정':'수입 기록 추가';
-  $('i-work').value=r?r.work_id:(S.sel!=='all'&&S.tab==='main'?S.sel:ws[0].id);
+  $('i-work').value=r?r.work_id:ws[0].id;
   $('i-span').value=r?r.span.slice(0,7):ym;
   $('i-sell').value=r&&r.sell!=null?r.sell:'';$('i-inc').value=r&&r.income!=null?r.income:'';$('i-star').value=r&&r.star!=null?r.star:'';
   $('i-del').hidden=!r;
