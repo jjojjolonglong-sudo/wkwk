@@ -34,10 +34,10 @@ body{
 .num{font-family:'Courier New','D2Coding',monospace;font-variant-numeric:tabular-nums}
 
 /* 네모 상자: 테두리 1.5px, 바탕색은 --bgc */
-.btn,.chip,.card,.sheet,dialog,.slip,.stamp,#login,.logo,.tab{--bgc:#fff;background:var(--bgc)}
+.btn,.chip,.card,.sheet,.slip,.stamp,#login,.logo,.tab{--bgc:#fff;background:var(--bgc)}
 .btn,.chip,.card,.slip,.stamp,#login,.logo,.tab{position:relative}
-/* 스테이플러: 큰 상자(내용 상자·대화상자·로그인)의 오른쪽 위 귀퉁이에 사선으로 찝은 심 */
-.sheet::after,dialog::after,#login::after{
+/* 스테이플러: 큰 상자(내용 상자·로그인)의 오른쪽 위 귀퉁이에 사선으로 찝은 심 */
+.sheet::after,#login::after{
   content:"";position:absolute;top:13px;right:5px;width:22px;height:2px;z-index:9;pointer-events:none;
   background:#4b5160;transform:rotate(45deg);   /* 한 줄짜리 심: 테두리보다 아주 약간 굵게, 검정보다 살짝 밝게 */
 }
@@ -136,11 +136,10 @@ textarea{resize:vertical;line-height:1.5}
 .soon .stamp{font-size:20px;padding:2px 16px}
 
 /* 대화상자 */
-dialog{--c:18px;width:min(94vw,460px);max-height:92vh;overflow:hidden;padding:0;border:1.5px solid var(--ink);color:var(--ink)}
-dialog[open]{display:flex;flex-direction:column}.db{min-height:0;overflow:auto;padding:16px}
-dialog::backdrop{background:rgba(27,32,48,.5)}
-dialog h2{margin:0 0 4px;font-size:18px}
-dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);padding-bottom:3px}
+/* 작품·집계 창: 팝업이 아니라 내용 상자 안에 열려요 (가운데 한 단) */
+.pnl{max-width:520px;margin:0 auto;padding:0 0 8px}   /* 위 여백은 다른 탭과 같은 24px(위 칸)만 */
+.pnl h2{margin:0 0 4px;font-size:18px}
+.pnl h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);padding-bottom:3px}
 .covrow{display:flex;gap:12px;align-items:flex-start;margin-top:4px}
 .ev{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:6px 0;border-bottom:1px dashed var(--dash)}
 .ev .d{flex:1;font-size:13px;min-width:120px}
@@ -166,7 +165,9 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
 .pvbox{position:relative;height:150px;overflow:hidden;padding:8px 10px;background:#fff;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
 .pvbox.mute{color:var(--mute);font-size:13px}
 .pvbox .lk{color:var(--mute)}
-.cptb td.rfc{padding:4px 4px 4px 0;text-align:right}.btn.rf{border:0;--bgc:transparent;padding:1px 8px;line-height:1.4;color:var(--mute)}.btn.rf:hover:not(:disabled){--bgc:#E3EBF1;color:var(--ink)}.rf[disabled]{opacity:.5;cursor:wait}
+.cptb td.rfc{padding:4px 2px 4px 0;text-align:right;white-space:nowrap}.rf svg{display:block;width:14px;height:14px;margin:2px 0}
+.full{padding:4px 2px 0;font-size:15px;line-height:1.8;white-space:pre-wrap;word-break:break-word}.full.mute{color:var(--mute);font-size:13px}.full .lk{color:var(--mute)}
+.rdh{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.btn.rf{border:0;--bgc:transparent;padding:1px 8px;line-height:1.4;color:var(--mute)}.btn.rf:hover:not(:disabled){--bgc:#E3EBF1;color:var(--ink)}.rf[disabled]{opacity:.5;cursor:wait}
 .cpun{margin-top:22px;padding-top:12px;border-top:1.5px dashed var(--dash)}
 .cpf{display:flex;align-items:center;gap:6px;font-weight:400;font-size:14px;margin:4px 0}
 .cpf input{display:inline-block;width:auto;margin:0}
@@ -197,7 +198,8 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
 </div>
 
 <!-- 작품 -->
-<dialog id="wd"><div class="db">
+<div id="park" hidden>
+<div class="pnl" id="wd">
   <h2 id="wd-t">작품</h2>
   <!-- 상세 보기 -->
   <section id="wv"></section>
@@ -240,10 +242,10 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
   <div class="btns ft"><button class="btn pri" id="w-save" type="button">저장</button><button class="btn" id="w-cancel" type="button">취소</button><button class="btn dng" id="w-del" type="button" hidden>삭제</button></div>
   <p class="hint" id="w-pubnote" style="text-align:right" hidden>출간된 작품은 삭제할 수 없어요.</p>
   </section>
-</div></dialog>
+</div>
 
 <!-- 수입 -->
-<dialog id="ind"><div class="db">
+<div class="pnl" id="ind">
   <h2 id="in-t">수입 기록</h2>
   <label>작품<select id="i-work"></select></label>
   <label>기간 (연월)<input id="i-span" type="month" min="1900-01" max="2099-12"></label>
@@ -257,8 +259,9 @@ dialog h3{margin:20px 0 6px;font-size:15px;border-bottom:1.5px solid var(--ink);
     <button class="btn" id="i-close" type="button">닫기</button>
     <button class="btn dng" id="i-del" type="button" hidden>삭제</button>
   </div>
-</div></dialog>
+</div>
 
+</div>
 <div id="toast" role="status"></div>
 
 <script>
@@ -460,7 +463,23 @@ function sortCp(){
   const k=CP.sort,d=CP.dir,val=r=>k==='c'?(r.date||''):k==='mod'?(r.modified_at||''):k==='work'?wname(r.work_id):(r.copy||'');
   return [...S.cp].sort((a,b)=>{const x=val(a),y=val(b);return (x<y?-1:x>y?1:0)*d||(a.id<b.id?-1:1)});
 }
+const FULLICON='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>';
+/* 전체 보기: 목록 대신 상자 안에 원고 전체를 보여줘요. '‹ 목록'으로 돌아가면 보던 목록 위치 그대로 */
+function vFull(){
+  const r=S.cp.find(x=>x.id===CP.full);if(!r){CP.full=null;return vCopy()}
+  const nm=(r.copy||'(이름 없음)').replace(/\.md$/i,'');
+  return `<div class="stick"><div class="bar l"><button class="btn sm" data-cp="back">‹ 목록</button><b class="rdh" title="${esc(nm)}">${esc(nm)}</b><span class="hint rdh" style="margin:0">${esc(wname(r.work_id))}</span></div></div><div class="full" id="fullbox">불러오는 중…</div>`;
+}
+async function fullAfter(){
+  const r=S.cp.find(x=>x.id===CP.full);let box=$('fullbox');if(!r||!box)return;
+  const f=CP.files&&r.file_uid&&CP.files.get(r.file_uid.toLowerCase());
+  if(!f){box.classList.add('mute');box.textContent=CP.state==='ok'?'폴더에서 이 파일을 찾을 수 없어요. 파일이 옮겨졌거나 지워졌을 수 있어요.':CP.state==='scanning'?'불러오는 중…':'이 기기에서는 원본 폴더를 읽을 수 없어서 본문을 볼 수 없어요.';return}
+  try{const key=f.uid+'|'+f.mod;let node=CP.cache.get(key);if(!node){node=cleanHtml(await cpBody(f));CP.cache.set(key,node)}
+    box=$('fullbox');if(box&&CP.full===r.id)box.replaceChildren(node.cloneNode(true))}
+  catch(e){box=$('fullbox');if(box){box.classList.add('mute');box.textContent='파일을 읽지 못했어요: '+e.message}}
+}
 function vCopy(){
+  if(CP.full)return vFull();
   const rows=sortCp(),st=CP.state,ar=k=>CP.sort===k?(CP.dir<0?' ▼':' ▲'):'',canOpen=typeof window.showDirectoryPicker==='function';
   const bar=`<div class="stick"><div class="bar l"><b>원고 ${rows.length}개</b>
     ${canOpen?'<button class="btn sm rf" data-cp="rescan" title="폴더 전체 다시 읽기">↻</button>':''}
@@ -472,10 +491,10 @@ function vCopy(){
   const body=rows.map(r=>{
     const nm=(r.copy||'(이름 없음)').replace(/\.md$/i,''),open=CP.open===r.id;
     const gone=CP.state==='ok'&&(!r.file_uid||!CP.files.has(r.file_uid.toLowerCase()));
-    return `<tr class="cprow${open?' open':''}"${canOpen?` data-cp="row" data-id="${esc(r.id)}"`:''}><td class="num">${esc(r.date||'-')}</td><td class="num" title="${esc(r.modified_at||'')}">${esc(kstDate(r.modified_at)||'-')}</td><td title="${esc(wname(r.work_id))}">${esc(wname(r.work_id))}</td><td title="${esc(nm)}">${esc(nm)}${gone?' <span class="hint">(파일 없음)</span>':''}</td>${canOpen?`<td class="rfc"><button class="btn sm rf" data-cp="rf" data-id="${esc(r.id)}" title="이 원고만 다시 읽기">↻</button></td>`:''}</tr>`
+    return `<tr class="cprow${open?' open':''}"${canOpen?` data-cp="row" data-id="${esc(r.id)}"`:''}><td class="num">${esc(r.date||'-')}</td><td class="num" title="${esc(r.modified_at||'')}">${esc(kstDate(r.modified_at)||'-')}</td><td title="${esc(wname(r.work_id))}">${esc(wname(r.work_id))}</td><td title="${esc(nm)}">${esc(nm)}${gone?' <span class="hint">(파일 없음)</span>':''}</td>${canOpen?`<td class="rfc"><button class="btn sm rf" data-cp="full" data-id="${esc(r.id)}" title="전체 보기">${FULLICON}</button><button class="btn sm rf" data-cp="rf" data-id="${esc(r.id)}" title="이 원고만 다시 읽기">↻</button></td>`:''}</tr>`
       +(open?`<tr class="pv"><td colspan="${canOpen?5:4}">`+'<div class="pvbox" id="pvbox">불러오는 중…</div></td></tr>':'');
   }).join('');
-  const table=rows.length?`<table class="cptb${canOpen?'':' nopv'}"><colgroup><col style="width:92px"><col style="width:92px"><col style="width:22%"><col>${canOpen?'<col style="width:44px">':''}</colgroup><thead><tr><th data-cp="sort" data-k="c">생성일${ar('c')}</th><th data-cp="sort" data-k="mod">수정일${ar('mod')}</th><th data-cp="sort" data-k="work">작품${ar('work')}</th><th data-cp="sort" data-k="name">파일명${ar('name')}</th>${canOpen?'<th title="원고별 다시 읽기"></th>':''}</tr></thead><tbody>${body}</tbody></table>`
+  const table=rows.length?`<table class="cptb${canOpen?'':' nopv'}"><colgroup><col style="width:92px"><col style="width:92px"><col style="width:22%"><col>${canOpen?'<col style="width:68px">':''}</colgroup><thead><tr><th data-cp="sort" data-k="c">생성일${ar('c')}</th><th data-cp="sort" data-k="mod">수정일${ar('mod')}</th><th data-cp="sort" data-k="work">작품${ar('work')}</th><th data-cp="sort" data-k="name">파일명${ar('name')}</th>${canOpen?'<th title="원고별 다시 읽기"></th>':''}</tr></thead><tbody>${body}</tbody></table>`
     :'<p class="empty">아직 연결된 원고가 없어요.</p>';
   let un='';
   if(st==='ok'&&CP.un.length){
@@ -546,6 +565,8 @@ $('view').addEventListener('click',e=>{
   else if(a==='sort'){const k=b.dataset.k;if(CP.sort===k)CP.dir=-CP.dir;else{CP.sort=k;CP.dir=(k==='c'||k==='mod')?-1:1}CP.open=null;render()}
   else if(a==='rescan'||a==='perm')copyScan(true);
   else if(a==='rf')cpRefresh(b);
+  else if(a==='full'){CP.listTop=$('scr').scrollTop;CP.full=b.dataset.id;render();$('scr').scrollTop=0}
+  else if(a==='back'){CP.full=null;render();$('scr').scrollTop=CP.listTop||0}
   else if(a==='chk'){const i=+b.dataset.i;b.checked?CP.sel.add(i):CP.sel.delete(i)}
   else if(a==='unall'){CP.un.forEach((o,i)=>{if(!o.dup)CP.sel.add(i)});render()}
   else if(a==='link')cpLink();
@@ -588,18 +609,25 @@ function vInc(){
   }
   return head+body;
 }
+/* 상자 안 패널(작품 보기·편집, 집계 기록). 열 때 목록 스크롤 위치를 기억했다가 닫으면 되돌려요 */
+let PNL=null,PNLtop=0;
+function park(){['wd','ind'].forEach(id=>{const n=$(id);if(n&&n.parentNode!==$('park'))$('park').appendChild(n)})}
+function openPanel(id){if(!PNL){const sc=$('scr');PNLtop=sc?sc.scrollTop:0}const same=PNL===id;PNL=id;render();if(!same)$('scr').scrollTop=0}
+function closePanel(){if(busy)return false;if(cur.pend){cur.pend.close();cur.pend=null}PNL=null;render();$('scr').scrollTop=PNLtop;return true}
+addEventListener('keydown',e=>{if(e.key==='Escape'&&PNL)closePanel()});
 function fitSh(){const sc=$('scr'),sh=$('sh');if(sc&&sh)sh.style.paddingRight=(10+sc.offsetWidth-sc.clientWidth)+'px'}   /* 아래쪽 스크롤바 폭만큼 위 줄도 안쪽으로 */
 addEventListener('resize',()=>fitSh());
 function render(){
-  const v=$('view'),old=$('scr'),top=old?old.scrollTop:0;
-  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.tab===S.tab)));v.classList.toggle('main',S.tab==='main');
+  const v=$('view'),old=$('scr'),top=old?old.scrollTop:0;park();
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.tab===S.tab)));v.classList.toggle('main',S.tab==='main'&&!PNL);
+  if(PNL){v.innerHTML='<div class="sh" id="sh"></div><div class="scr" id="scr"></div>';$('scr').appendChild($(PNL));$('scr').scrollTop=top;fitSh();return}
   v.innerHTML=`<div class="sh" id="sh"></div><div class="scr" id="scr">${({main:vMain,works:vWorks,copy:vCopy,inc:vInc})[S.tab]()}</div>`;
   const st=$('scr').querySelector(':scope>.stick');if(st)$('sh').appendChild(st);   // 위 줄은 고정 칸으로
   $('scr').scrollTop=top;fitSh();
-  if(S.tab==='copy')cpAfter();
+  if(S.tab==='copy')CP.full?fullAfter():cpAfter();
 }
 const flip=(set,k)=>set.has(k)?set.delete(k):set.add(k);
-document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(t){S.tab=t.dataset.tab;render();$('scr').scrollTop=0;if(S.tab==='copy'&&typeof window.showDirectoryPicker==='function')copyScan(false)}});
+document.querySelector('.tabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(t){if(PNL&&!closePanel())return;S.tab=t.dataset.tab;render();$('scr').scrollTop=0;if(S.tab==='copy'&&typeof window.showDirectoryPicker==='function')copyScan(false)}});
 $('view').addEventListener('click',e=>{
   const t=e.target.closest('[data-nav],[data-ws],[data-iv],[data-tg],[data-work],[data-inc],[data-act]');if(!t)return;
   const d=t.dataset;
@@ -626,7 +654,6 @@ function setBusy(on,msg){
   $('w-busy').hidden=!on;$('w-busy').textContent=on?'⏳ '+msg:'';
 }
 addEventListener('beforeunload',e=>{if(busy){e.preventDefault();e.returnValue=''}});
-$('wd').addEventListener('cancel',e=>{if(busy)e.preventDefault()});
 $('e-type').innerHTML=TYPES.map(t=>`<option>${t}</option>`).join('');
 function setCv(){
   const box=$('w-cv');
@@ -648,7 +675,7 @@ function openView(id){
     <h3>이벤트</h3>${ev.length?ev.map(e=>`<div class="ev">${stamp(e.type)}<span class="d num">${evDates(e)}</span></div>`).join(''):'<p class="hint">이벤트가 없어요.</p>'}
     <dl class="kv"><dt>별점</dt><dd class="num">${st==null?'-':fmtN(st)}</dd><dt>수입</dt><dd class="num">${fmtW(inc)} <span class="hint">· ${fmtN(sell)}부 · ${rs.filter(x=>x.income!=null).length}개월</span></dd></dl>`;
   wdMode(false);
-  if(!$('wd').open)$('wd').showModal();
+  openPanel('wd');
 }
 function openWork(id){
   const w=id?S.works.find(x=>x.id===id):null;
@@ -662,10 +689,10 @@ function openWork(id){
   $('w-star').value=st==null?'-':fmtN(st);$('w-inc').value=w?fmtW(rs.reduce((a,x)=>a+(x.income||0),0)):'-';
   $('w-file').value='';
   setCv();resetEv();renderEv();wdMode(true);
-  if(!$('wd').open)$('wd').showModal();
+  openPanel('wd');
 }
 $('w-edit').onclick=()=>openWork(cur.id);
-$('w-cancel').onclick=()=>{if(busy)return;if(cur.id)openView(cur.id);else $('wd').close()};
+$('w-cancel').onclick=()=>{if(busy)return;if(cur.id)openView(cur.id);else closePanel()};
 $('w-cv').onclick=()=>{if(!busy)$('w-file').click()};
 $('w-cv').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('w-cv').click()}};
 $('w-file').onchange=async e=>{
@@ -679,8 +706,7 @@ $('w-file').onchange=async e=>{
   finally{setBusy(false);e.target.value=''}
 };
 $('w-clr').onclick=()=>{if(cur.pend){cur.pend.close();cur.pend=null}cur.clear=true;$('w-file').value='';setCv()};
-$('w-close').onclick=()=>$('wd').close();
-$('wd').addEventListener('close',()=>{if(busy){$('wd').showModal();return}if(cur.pend){cur.pend.close();cur.pend=null}});
+$('w-close').onclick=()=>closePanel();
 const dec=v=>v===''?null:+v, int=v=>v===''?null:Math.round(+v);
 $('w-save').onclick=async()=>{
   const name=$('w-name').value.trim();
@@ -709,7 +735,7 @@ $('w-del').onclick=async()=>{
   if(!confirm('작품과 연결된 이벤트·원고·수입 기록이 모두 지워져요. 삭제할까요?'))return;
   const {error}=await sb.from('wkwk_work').delete().eq('id',w.id);
   if(fail(error))return;
-  $('wd').close();await loadAll();toast('삭제했어요');
+  closePanel();await loadAll();toast('삭제했어요');
 };
 
 /* 이벤트 */
@@ -758,9 +784,9 @@ function openInc(id){
   $('i-span').value=r?r.span.slice(0,7):ym;
   $('i-sell').value=r&&r.sell!=null?r.sell:'';$('i-inc').value=r&&r.income!=null?r.income:'';$('i-star').value=r&&r.star!=null?r.star:'';
   $('i-del').hidden=!r;
-  $('ind').showModal();
+  openPanel('ind');
 }
-$('i-close').onclick=()=>$('ind').close();
+$('i-close').onclick=()=>closePanel();
 $('i-save').onclick=async()=>{
   const m=$('i-span').value;if(!m){toast('연월을 선택해 주세요');return}
   const sell=int($('i-sell').value),income=int($('i-inc').value),star=int($('i-star').value);
@@ -769,13 +795,13 @@ $('i-save').onclick=async()=>{
   const r=incId?await sb.from('wkwk_income').update(row).eq('id',incId)
                 :await sb.from('wkwk_income').insert({...row,user_id:S.uid});
   if(r.error){toast(r.error.code==='23505'?'그 작품의 같은 연월 기록이 이미 있어요. 기존 기록을 눌러 수정해 주세요':r.error.message);return}
-  $('ind').close();await loadAll();toast('저장했어요');
+  closePanel();await loadAll();toast('저장했어요');
 };
 $('i-del').onclick=async()=>{
   if(!confirm('이 기록을 삭제할까요?'))return;
   const {error}=await sb.from('wkwk_income').delete().eq('id',incId);
   if(fail(error))return;
-  $('ind').close();await loadAll();toast('삭제했어요');
+  closePanel();await loadAll();toast('삭제했어요');
 };
 
 /* ---------- 로그인 ---------- */
