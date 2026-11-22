@@ -16,6 +16,7 @@
 <script src="https://jjojjolonglong-sudo.github.io/mnmn/config.js"></script>
 <script src="https://jjojjolonglong-sudo.github.io/mnmn/core.v1.js" data-app="wkwk"></script>
 <script src="https://jjojjolonglong-sudo.github.io/mnmn/media.js"></script>
+<script src="https://jjojjolonglong-sudo.github.io/mnmn/pick.v1.js"></script>
 <style>
 /* 콘셉트: 오피스풍 교정쇄. 원고지 격자 위의 종이, 한쪽 귀퉁이를 자른 네모, 영수증 */
 :root{
@@ -186,7 +187,7 @@ textarea{resize:vertical;line-height:1.5}
 <div id="app" hidden>
   <header class="top">
     <h1 class="logo">wkwk</h1><span class="sub">작업노트</span>
-    <button class="btn sm" id="out">로그아웃</button>
+    <button class="btn sm" id="rl" title="새로고침">↻</button><button class="btn sm" id="out">로그아웃</button>
   </header>
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" data-tab="main">메인</button>
@@ -830,8 +831,14 @@ addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e});
 addEventListener('appinstalled',()=>{$('inst').hidden=true});
 $('inst').onclick=async()=>{
   if(dp){dp.prompt();await dp.userChoice;dp=null}
-  else alert('크롬 메뉴(⋮) → "앱 설치" 또는 "홈 화면에 추가"를 눌러 주세요.\n(앱 안의 브라우저가 아니라 크롬에서 열어야 해요)');
+  else{let ins=false;try{ins=!!(navigator.getInstalledRelatedApps&&(await navigator.getInstalledRelatedApps()).length)}catch(e){}
+    alert(ins?'이미 이 기기에 설치돼 있어요. (설치 버튼이 필요하면 앱을 지우고 다시 열면 생겨요)':/iPhone|iPad|iPod/.test(navigator.userAgent)?'아이폰: 사파리 아래 공유 버튼 → 홈 화면에 추가':'크롬 메뉴(⋮) → "앱 설치" 또는 "홈 화면에 추가"를 눌러 주세요.\n(앱 안의 브라우저가 아니라 크롬에서 열어야 해요)')}
 };
+$('rl').onclick=()=>location.reload();
+/* 작품 고르기(수입 기록·원고 연결): 타이핑해서 찾고, 없으면 엔터로 그 이름의 새 작품을 만들어 바로 넣기 */
+if(window.Pick)Pick.auto('#i-work, #cp-work',{create:async name=>{
+  const {data,error}=await sb.from('wkwk_work').insert({name,user_id:S.uid}).select().single();
+  if(fail(error))return null;S.works.push(data);toast('새 작품을 만들었어요: '+name);return data.id}});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 boot();
